@@ -2,7 +2,7 @@ apiVersion: v2
 name: remnawave-panel
 description: A Helm chart for deploying Remnawave Panel on Kubernetes
 type: application
-version: 0.1.1
+version: 0.2.0
 appVersion: "2"
 home: https://remnawave.github.io/panel
 sources:

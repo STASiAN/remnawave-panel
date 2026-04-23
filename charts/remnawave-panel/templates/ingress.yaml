@@ -13,7 +13,7 @@ spec:
   {{- if .Values.ingress.className }}
   ingressClassName: {{ .Values.ingress.className }}
   {{- end }}
-  {{- if .Values.ingress.tls }}
+  {{- if or .Values.ingress.tls (and .Values.subscription.enabled .Values.subscription.ingress.tls) }}
   tls:
     {{- range .Values.ingress.tls }}
     - hosts:
@@ -21,6 +21,15 @@ spec:
         - {{ . | quote }}
         {{- end }}
       secretName: {{ .secretName }}
+    {{- end }}
+    {{- if .Values.subscription.enabled }}
+    {{- range .Values.subscription.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ .secretName }}
+    {{- end }}
     {{- end }}
   {{- end }}
   rules:
@@ -37,5 +46,21 @@ spec:
                 port:
                   name: http
           {{- end }}
+    {{- end }}
+    {{- if .Values.subscription.enabled }}
+    {{- range .Values.subscription.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ include "remnawave-panel.fullname" $ }}
+                port:
+                  name: subscription
+          {{- end }}
+    {{- end }}
     {{- end }}
 {{- end }}

@@ -14,7 +14,7 @@ Remnawave Subscription Page is lightweight and secure way to hide your Remnawave
 
 ---
 
-You can install subscription page on the same server as Remnawave Panel or on a different server. Select the appropriate guide below.
+You can install subscription page on the same server as Remnawave Panel or on a different server. Select the appropriate guide below. For Kubernetes deployments, see the [Helm Chart subscription-page section](/install/helm-chart#subscription-page-sidecar) — the sidecar topology is the K8s counterpart to the "Bundled" compose install.
 
 ```mdx-code-block
 import DocCardList from '@theme/DocCardList';

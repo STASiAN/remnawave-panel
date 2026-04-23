@@ -71,6 +71,17 @@ Container image reference: supports tag, digest, and appVersion fallback.
 {{- end }}
 
 {{/*
+Subscription-page sidecar image reference: digest wins, else tag (default "latest").
+*/}}
+{{- define "remnawave-panel.subscription.image" -}}
+{{- if .Values.subscription.image.digest }}
+{{- printf "%s@%s" .Values.subscription.image.repository .Values.subscription.image.digest }}
+{{- else }}
+{{- printf "%s:%s" .Values.subscription.image.repository (default "latest" .Values.subscription.image.tag) }}
+{{- end }}
+{{- end }}
+
+{{/*
 Secret name: chart-managed or existing.
 */}}
 {{- define "remnawave-panel.secretName" -}}
@@ -133,12 +144,27 @@ Effective REDIS_PORT.
 
 {{/*
 Derive SUB_PUBLIC_DOMAIN.
-Priority: explicit value > ingress host > gateway hostname.
+Priority:
+  1. Explicit subscription.publicDomain (always wins).
+  2. When subscription.enabled=true: subscription.ingress.hosts[0].host /
+     subscription.gateway.hostnames[0] + publicPath.
+  3. When subscription.enabled=false: ingress.hosts[0].host /
+     gateway.hostnames[0] + publicPath.
 Fails if none are available.
 */}}
 {{- define "remnawave-panel.subPublicDomain" -}}
 {{- if .Values.subscription.publicDomain }}
 {{- .Values.subscription.publicDomain }}
+{{- else if .Values.subscription.enabled }}
+{{- if and .Values.ingress.enabled (gt (len .Values.subscription.ingress.hosts) 0) }}
+{{- $host := (index .Values.subscription.ingress.hosts 0).host }}
+{{- printf "%s%s" $host .Values.subscription.publicPath }}
+{{- else if and .Values.gateway.enabled (gt (len .Values.subscription.gateway.hostnames) 0) }}
+{{- $host := index .Values.subscription.gateway.hostnames 0 }}
+{{- printf "%s%s" $host .Values.subscription.publicPath }}
+{{- else }}
+{{- fail "subscription.enabled=true requires subscription.publicDomain to be set explicitly, or a subscription.ingress.hosts[].host / subscription.gateway.hostnames[] entry with the matching front-end enabled" }}
+{{- end }}
 {{- else if and .Values.ingress.enabled (gt (len .Values.ingress.hosts) 0) }}
 {{- $host := (index .Values.ingress.hosts 0).host }}
 {{- printf "%s%s" $host .Values.subscription.publicPath }}

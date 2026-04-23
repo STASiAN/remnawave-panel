@@ -39,7 +39,7 @@ Remnawave Panel has been installed.
   {{- end }}
 {{- end }}
 
-{{- if and .Values.ingress.enabled (gt (len .Values.ingress.hosts) 0) }}
+{{- if and (not .Values.subscription.enabled) .Values.ingress.enabled (gt (len .Values.ingress.hosts) 0) }}
 {{- $ingressHost := (index .Values.ingress.hosts 0).host }}
 {{- $derivedSub := printf "%s%s" $ingressHost .Values.subscription.publicPath }}
 {{- if and .Values.subscription.publicDomain (ne .Values.subscription.publicDomain $derivedSub) }}
@@ -48,6 +48,29 @@ WARNING: subscription.publicDomain ({{ .Values.subscription.publicDomain }}) dif
 ingress host-derived value ({{ $derivedSub }}). Subscription URLs may not match
 the ingress endpoint. This is expected if you front the panel with a CDN.
 {{- end }}
+{{- end }}
+
+{{- if .Values.subscription.enabled }}
+
+==> Subscription Page
+  Sidecar image: {{ include "remnawave-panel.subscription.image" . }}
+  {{- if and .Values.ingress.enabled (gt (len .Values.subscription.ingress.hosts) 0) }}
+  URL: http{{ if .Values.subscription.ingress.tls }}s{{ end }}://{{ (index .Values.subscription.ingress.hosts 0).host }}{{ if .Values.subscription.customSubPrefix }}/{{ .Values.subscription.customSubPrefix }}{{ end }}
+  {{- else if and .Values.gateway.enabled (gt (len .Values.subscription.gateway.hostnames) 0) }}
+  URL: https://{{ index .Values.subscription.gateway.hostnames 0 }}{{ if .Values.subscription.customSubPrefix }}/{{ .Values.subscription.customSubPrefix }}{{ end }}
+  {{- end }}
+  {{- if .Values.existingSecret }}
+  existingSecret ({{ .Values.existingSecret }}) MUST additionally contain:
+    - REMNAWAVE_API_TOKEN
+    {{- if .Values.subscription.marzbanLegacy.enabled }}
+    - MARZBAN_LEGACY_SECRET_KEY
+    {{- end }}
+  {{- else if not .Values.subscription.apiToken }}
+  WARNING: subscription.apiToken is empty. Generate one in the panel UI
+  (Settings → API Tokens), then run:
+    helm upgrade --reuse-values --set subscription.apiToken=<token> ...
+  The pod will roll automatically via the config/secret checksum annotation.
+  {{- end }}
 {{- end }}
 
 ==> Access

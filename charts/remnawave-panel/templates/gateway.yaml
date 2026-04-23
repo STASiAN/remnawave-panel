@@ -5,6 +5,10 @@ metadata:
   name: {{ include "remnawave-panel.fullname" . }}
   labels:
     {{- include "remnawave-panel.labels" . | nindent 4 }}
+  {{- with .Values.gateway.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   gatewayClassName: {{ required "gateway.gatewayClassName is required when gateway.createGateway=true" .Values.gateway.gatewayClassName }}
   listeners:

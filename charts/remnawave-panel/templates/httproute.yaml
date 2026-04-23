@@ -5,6 +5,10 @@ metadata:
   name: {{ include "remnawave-panel.fullname" . }}
   labels:
     {{- include "remnawave-panel.labels" . | nindent 4 }}
+  {{- with .Values.gateway.httpRoute.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   parentRefs:
     {{- if .Values.gateway.gatewayName }}
@@ -35,6 +39,10 @@ metadata:
   name: {{ include "remnawave-panel.fullname" . }}-subscription
   labels:
     {{- include "remnawave-panel.labels" . | nindent 4 }}
+  {{- with .Values.subscription.gateway.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   parentRefs:
     {{- if .Values.subscription.gateway.parentRefs }}

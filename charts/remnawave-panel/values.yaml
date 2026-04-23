@@ -122,9 +122,15 @@ subscription:
   #     when customSubPrefix is non-empty.
   publicPath: "/api/sub"
 
-  # -- Ingress hosts for the subscription-page (used when ingress.enabled=true).
-  # Mirrors ingress.hosts structure.
+  # -- Ingress for the subscription-page (used when ingress.enabled=true).
+  # Rendered as a separate Ingress resource. `className` and `annotations`
+  # fall back to ingress.className / ingress.annotations when unset.
   ingress:
+    # -- Ingress class name. Falls back to ingress.className when empty.
+    className: ""
+    # -- Annotations for the subscription Ingress. Falls back to
+    # ingress.annotations when empty.
+    annotations: {}
     hosts: []
     # - host: subs.example.com
     #   paths:

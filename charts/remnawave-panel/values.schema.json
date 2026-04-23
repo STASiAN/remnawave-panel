@@ -74,6 +74,8 @@
         "ingress": {
           "type": "object",
           "properties": {
+            "className": { "type": "string" },
+            "annotations": { "type": "object" },
             "hosts": { "type": "array" },
             "tls": { "type": "array" }
           }

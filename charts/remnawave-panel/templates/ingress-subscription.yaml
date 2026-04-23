@@ -1,19 +1,21 @@
-{{- if .Values.ingress.enabled -}}
+{{- if and .Values.subscription.enabled .Values.ingress.enabled -}}
+{{- $className := default .Values.ingress.className .Values.subscription.ingress.className -}}
+{{- $annotations := default .Values.ingress.annotations .Values.subscription.ingress.annotations -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "remnawave-panel.fullname" . }}
+  name: {{ include "remnawave-panel.fullname" . }}-subscription
   labels:
     {{- include "remnawave-panel.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
+  {{- with $annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if .Values.ingress.className }}
-  ingressClassName: {{ .Values.ingress.className }}
+  {{- if $className }}
+  ingressClassName: {{ $className }}
   {{- end }}
-  {{- with .Values.ingress.tls }}
+  {{- with .Values.subscription.ingress.tls }}
   tls:
     {{- range . }}
     - hosts:
@@ -24,7 +26,7 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    {{- range .Values.ingress.hosts }}
+    {{- range .Values.subscription.ingress.hosts }}
     - host: {{ .host | quote }}
       http:
         paths:
@@ -35,7 +37,7 @@ spec:
               service:
                 name: {{ include "remnawave-panel.fullname" $ }}
                 port:
-                  name: http
+                  name: subscription
           {{- end }}
     {{- end }}
 {{- end }}

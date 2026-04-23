@@ -25,9 +25,8 @@ helm install cnpg cnpg/cloudnative-pg --namespace cnpg-system --create-namespace
 ### Step 1 — Add the chart repository
 
 ```bash
-helm install remnawave oci://ghcr.io/remnawave/charts/remnawave-panel \
-  --namespace remnawave --create-namespace \
-  -f values.yaml
+helm repo add remnawave-panel https://stasian.github.io/remnawave-panel
+helm repo update
 ```
 
 ### Step 2 — Create a `values.yaml`
@@ -68,7 +67,7 @@ openssl rand -hex 64
 ### Step 3 — Install
 
 ```bash
-helm install remnawave oci://ghcr.io/remnawave/charts/remnawave-panel \
+helm install remnawave remnawave-panel/remnawave-panel \
   --namespace remnawave --create-namespace \
   -f values.yaml
 ```
@@ -175,7 +174,8 @@ Requires the Prometheus Operator CRDs in your cluster.
 ## Upgrading
 
 ```bash
-helm upgrade remnawave oci://ghcr.io/remnawave/charts/remnawave-panel \
+helm repo update
+helm upgrade remnawave remnawave-panel/remnawave-panel \
   --namespace remnawave \
   -f values.yaml
 ```

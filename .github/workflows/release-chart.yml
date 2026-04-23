@@ -1,0 +1,50 @@
+name: Release Helm Chart
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "charts/remnawave-panel/**"
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Package chart
+        run: |
+          mkdir -p /tmp/helm-pkg
+          helm dependency update charts/remnawave-panel/
+          helm package charts/remnawave-panel/ -d /tmp/helm-pkg/
+
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Update repo index
+        run: |
+          cp /tmp/helm-pkg/*.tgz gh-pages/
+          helm repo index gh-pages/ --url https://stasian.github.io/remnawave-panel --merge gh-pages/index.yaml
+
+      - name: Push to gh-pages
+        run: |
+          cd gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "chore: publish Helm chart $(ls /tmp/helm-pkg/*.tgz | xargs -n1 basename | sed 's/.tgz//')"
+          git push

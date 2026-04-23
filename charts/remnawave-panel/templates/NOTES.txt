@@ -29,16 +29,6 @@ Remnawave Panel has been installed.
   {{- end }}
 {{- end }}
 
-{{- if .Values.gateway.enabled }}
-
-==> Gateway API
-  HTTPRoute created.
-  NOTE: Gateway API CRDs (gateway.networking.k8s.io/v1) must be installed.
-  {{- if .Values.gateway.createGateway }}
-  A chart-managed Gateway resource was also created.
-  {{- end }}
-{{- end }}
-
 {{- if and (not .Values.subscription.enabled) .Values.ingress.enabled (gt (len .Values.ingress.hosts) 0) }}
 {{- $ingressHost := (index .Values.ingress.hosts 0).host }}
 {{- $derivedSub := printf "%s%s" $ingressHost .Values.subscription.publicPath }}
@@ -56,8 +46,6 @@ the ingress endpoint. This is expected if you front the panel with a CDN.
   Sidecar image: {{ include "remnawave-panel.subscription.image" . }}
   {{- if and .Values.ingress.enabled (gt (len .Values.subscription.ingress.hosts) 0) }}
   URL: http{{ if .Values.subscription.ingress.tls }}s{{ end }}://{{ (index .Values.subscription.ingress.hosts 0).host }}{{ if .Values.subscription.customSubPrefix }}/{{ .Values.subscription.customSubPrefix }}{{ end }}
-  {{- else if and .Values.gateway.enabled (gt (len .Values.subscription.gateway.hostnames) 0) }}
-  URL: https://{{ index .Values.subscription.gateway.hostnames 0 }}{{ if .Values.subscription.customSubPrefix }}/{{ .Values.subscription.customSubPrefix }}{{ end }}
   {{- end }}
   {{- if .Values.existingSecret }}
   existingSecret ({{ .Values.existingSecret }}) MUST additionally contain:
@@ -74,5 +62,5 @@ the ingress endpoint. This is expected if you front the panel with a CDN.
 {{- end }}
 
 ==> Access
-  Panel:   http{{ if .Values.ingress.tls }}s{{ end }}://{{ if .Values.ingress.enabled }}{{ (index .Values.ingress.hosts 0).host }}{{ else if .Values.gateway.enabled }}{{ index .Values.gateway.hostnames 0 }}{{ else }}<cluster-ip>:{{ .Values.app.port }}{{ end }}
+  Panel:   http{{ if .Values.ingress.tls }}s{{ end }}://{{ if .Values.ingress.enabled }}{{ (index .Values.ingress.hosts 0).host }}{{ else }}<cluster-ip>:{{ .Values.app.port }}{{ end }}
   Metrics: <pod-ip>:{{ .Values.metrics.port }}/metrics (basic auth: {{ .Values.metrics.user }})

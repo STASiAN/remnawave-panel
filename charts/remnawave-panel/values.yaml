@@ -69,8 +69,7 @@ domains:
 subscription:
   # -- Enable the remnawave/subscription-page sidecar container in the panel Pod.
   # When true, the sidecar serves the branded subscription page at its own ingress host,
-  # and SUB_PUBLIC_DOMAIN derives from subscription.ingress.hosts[0].host or
-  # subscription.gateway.hostnames[0] (plus publicPath).
+  # and SUB_PUBLIC_DOMAIN derives from subscription.ingress.hosts[0].host (plus publicPath).
   enabled: false
 
   image:
@@ -110,8 +109,8 @@ subscription:
   caddyAuthApiToken: ""
 
   # -- Explicit SUB_PUBLIC_DOMAIN value (always highest precedence).
-  # If empty, derived from the subscription ingress/gateway host (when enabled=true)
-  # or the panel ingress/gateway host (when enabled=false) plus publicPath.
+  # If empty, derived from the subscription Ingress host (when enabled=true)
+  # or the panel Ingress host (when enabled=false) plus publicPath.
   publicDomain: ""
 
   # -- Path suffix appended when deriving SUB_PUBLIC_DOMAIN.
@@ -135,14 +134,6 @@ subscription:
     # - secretName: subs-tls
     #   hosts:
     #     - subs.example.com
-
-  # -- Gateway API hostnames for the subscription-page (used when gateway.enabled=true).
-  # parentRefs default to the panel HTTPRoute's parentRefs; override here to differ.
-  gateway:
-    hostnames: []
-    parentRefs: []
-    # -- Annotations for the subscription HTTPRoute resource
-    annotations: {}
 
   # -- Resource requests and limits for the sidecar container
   resources:
@@ -378,7 +369,8 @@ ingress:
   enabled: false
   # -- Ingress class name
   className: ""
-  # -- Additional annotations
+  # -- Annotations applied to the Ingress resource. This is the sole place for
+  # controller-specific hints (e.g. external-dns, cert-manager, nginx/traefik/caddy).
   annotations: {}
   hosts:
     - host: panel.example.com
@@ -390,32 +382,6 @@ ingress:
   #  - secretName: panel-tls
   #    hosts:
   #      - panel.example.com
-
-# =============================================================================
-# Gateway API
-# =============================================================================
-
-gateway:
-  # -- Enable Gateway API HTTPRoute (mutually exclusive with ingress.enabled)
-  enabled: false
-  # -- Create a chart-managed Gateway resource
-  createGateway: false
-  # -- GatewayClass name (required when createGateway=true)
-  gatewayClassName: ""
-  # -- Gateway name to reference in HTTPRoute parentRefs
-  gatewayName: ""
-  # -- Hostnames for the HTTPRoute
-  hostnames: []
-  # -- Annotations for the chart-managed Gateway resource (e.g. external-dns,
-  # cert-manager, controller-specific hints)
-  annotations: {}
-  # -- TLS configuration for chart-managed Gateway
-  tls: {}
-  # -- Additional parentRefs for the HTTPRoute
-  parentRefs: []
-  httpRoute:
-    # -- Annotations for the panel HTTPRoute resource
-    annotations: {}
 
 # =============================================================================
 # CNPG PostgreSQL Subchart (cluster)

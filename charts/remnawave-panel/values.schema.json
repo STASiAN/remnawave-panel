@@ -78,14 +78,6 @@
             "tls": { "type": "array" }
           }
         },
-        "gateway": {
-          "type": "object",
-          "properties": {
-            "hostnames": { "type": "array", "items": { "type": "string" } },
-            "parentRefs": { "type": "array" },
-            "annotations": { "type": "object" }
-          }
-        },
         "resources": { "type": "object" },
         "probes": {
           "type": "object",
@@ -185,28 +177,7 @@
       "properties": {
         "enabled": { "type": "boolean" }
       }
-    },
-    "gateway": {
-      "type": "object",
-      "properties": {
-        "enabled": { "type": "boolean" },
-        "annotations": { "type": "object" },
-        "httpRoute": {
-          "type": "object",
-          "properties": {
-            "annotations": { "type": "object" }
-          }
-        }
-      }
     }
   },
-  "if": {
-    "properties": {
-      "ingress": { "properties": { "enabled": { "const": true } } },
-      "gateway": { "properties": { "enabled": { "const": true } } }
-    },
-    "required": ["ingress", "gateway"]
-  },
-  "then": false,
   "additionalProperties": true
 }

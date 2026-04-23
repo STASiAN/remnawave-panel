@@ -7,6 +7,23 @@ title: Helm Chart (Kubernetes)
 
 Deploy Remnawave Panel on Kubernetes using Helm.
 
+## Migration: removing Gateway API
+
+Chart version **0.3.1** removes Gateway API support (the `gateway.*` and `subscription.gateway.*` value subtrees, plus the chart-managed `Gateway` and `HTTPRoute` resources). `Ingress` is now the sole routing front-end.
+
+If you were running with `gateway.enabled: true`, migrate before upgrading:
+
+| Old value                              | New value                                          |
+| -------------------------------------- | -------------------------------------------------- |
+| `gateway.enabled: true`                | `ingress.enabled: true`                            |
+| `gateway.hostnames[]`                  | `ingress.hosts[].host` (with a `paths[]` entry)    |
+| `gateway.annotations`                  | `ingress.annotations`                              |
+| `gateway.gatewayClassName`             | `ingress.className`                                |
+| `gateway.tls`                          | `ingress.tls[]`                                    |
+| `subscription.gateway.hostnames[]`     | `subscription.ingress.hosts[].host`                |
+
+Run `helm diff upgrade` before applying to confirm `HTTPRoute` (and the chart-managed `Gateway`, if `createGateway` was set) is removed and the new `Ingress` takes its place. Externally-owned `Gateway` resources are not touched.
+
 ## Prerequisites
 
 - Kubernetes >= 1.29
@@ -127,22 +144,6 @@ externalRedis:
   port: 6379
 ```
 
-## Gateway API
-
-To use Gateway API instead of Ingress:
-
-```yaml title="values.yaml"
-gateway:
-  enabled: true
-  gatewayName: "my-gateway"
-  hostnames:
-    - panel.example.com
-```
-
-:::warning
-`ingress.enabled` and `gateway.enabled` are mutually exclusive. Do not enable both.
-:::
-
 ## Subscription Page Sidecar {#subscription-page-sidecar}
 
 The chart ships an opt-in sidecar container (`remnawave/subscription-page`) that serves the branded subscription page alongside the panel. This is the K8s counterpart to the compose ["Bundled" install](/install/subscription-page/bundled) — the sidecar lives in the panel Pod and talks to the panel over `localhost`.
@@ -172,7 +173,7 @@ subscription:
           - subs.example.com
 ```
 
-With `ingress.enabled: true` already set for the panel, the same `Ingress` resource picks up a second rule for `subs.example.com` pointing at the sidecar. Gateway API users set `subscription.gateway.hostnames` instead — the chart renders a second `HTTPRoute` inheriting the panel's `parentRefs`.
+With `ingress.enabled: true` already set for the panel, the same `Ingress` resource picks up a second rule for `subs.example.com` pointing at the sidecar.
 
 ### Generating the API token
 
@@ -210,7 +211,7 @@ subscription:
 ```
 
 :::note
-When `subscription.enabled: true`, `SUB_PUBLIC_DOMAIN` is derived from `subscription.ingress.hosts[0].host` (or `subscription.gateway.hostnames[0]`) plus `subscription.publicPath`. Set `subscription.publicDomain` explicitly to bypass the derivation — useful when fronting the subscription page via a CDN or custom URL.
+When `subscription.enabled: true`, `SUB_PUBLIC_DOMAIN` is derived from `subscription.ingress.hosts[0].host` plus `subscription.publicPath`. Set `subscription.publicDomain` explicitly to bypass the derivation — useful when fronting the subscription page via a CDN or custom URL.
 :::
 
 ## Prometheus Monitoring

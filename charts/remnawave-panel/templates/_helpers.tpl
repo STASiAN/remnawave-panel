@@ -146,10 +146,8 @@ Effective REDIS_PORT.
 Derive SUB_PUBLIC_DOMAIN.
 Priority:
   1. Explicit subscription.publicDomain (always wins).
-  2. When subscription.enabled=true: subscription.ingress.hosts[0].host /
-     subscription.gateway.hostnames[0] + publicPath.
-  3. When subscription.enabled=false: ingress.hosts[0].host /
-     gateway.hostnames[0] + publicPath.
+  2. When subscription.enabled=true: subscription.ingress.hosts[0].host + publicPath.
+  3. When subscription.enabled=false: ingress.hosts[0].host + publicPath.
 Fails if none are available.
 */}}
 {{- define "remnawave-panel.subPublicDomain" -}}
@@ -159,19 +157,13 @@ Fails if none are available.
 {{- if and .Values.ingress.enabled (gt (len .Values.subscription.ingress.hosts) 0) }}
 {{- $host := (index .Values.subscription.ingress.hosts 0).host }}
 {{- printf "%s%s" $host .Values.subscription.publicPath }}
-{{- else if and .Values.gateway.enabled (gt (len .Values.subscription.gateway.hostnames) 0) }}
-{{- $host := index .Values.subscription.gateway.hostnames 0 }}
-{{- printf "%s%s" $host .Values.subscription.publicPath }}
 {{- else }}
-{{- fail "subscription.enabled=true requires subscription.publicDomain to be set explicitly, or a subscription.ingress.hosts[].host / subscription.gateway.hostnames[] entry with the matching front-end enabled" }}
+{{- fail "subscription.enabled=true requires subscription.publicDomain to be set explicitly, or ingress.enabled=true with a subscription.ingress.hosts[].host entry" }}
 {{- end }}
 {{- else if and .Values.ingress.enabled (gt (len .Values.ingress.hosts) 0) }}
 {{- $host := (index .Values.ingress.hosts 0).host }}
 {{- printf "%s%s" $host .Values.subscription.publicPath }}
-{{- else if and .Values.gateway.enabled (gt (len .Values.gateway.hostnames) 0) }}
-{{- $host := index .Values.gateway.hostnames 0 }}
-{{- printf "%s%s" $host .Values.subscription.publicPath }}
 {{- else }}
-{{- fail "subscription.publicDomain must be set explicitly, or enable ingress/gateway with a host" }}
+{{- fail "subscription.publicDomain must be set explicitly, or enable ingress with a host" }}
 {{- end }}
 {{- end }}

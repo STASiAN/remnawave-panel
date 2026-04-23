@@ -20,7 +20,9 @@ apiInstances: 1
 # -- Name of an existing Secret containing all sensitive env vars.
 # When set, the chart-managed Secret is not created.
 # Required keys: JWT_AUTH_SECRET, JWT_API_TOKENS_SECRET, METRICS_PASS
-# Optional keys: DATABASE_URL (when cnpg.enabled=false), WEBHOOK_SECRET_HEADER, TELEGRAM_BOT_TOKEN, REDIS_PASSWORD
+# Optional keys: DATABASE_URL (when cnpg.enabled=false), WEBHOOK_SECRET_HEADER, TELEGRAM_BOT_TOKEN, REDIS_PASSWORD,
+# REMNAWAVE_API_TOKEN (when subscription.enabled=true), MARZBAN_LEGACY_SECRET_KEY (when subscription.marzbanLegacy.enabled=true),
+# CADDY_AUTH_API_TOKEN (when the Caddy-with-security addon is in use)
 existingSecret: ""
 
 # =============================================================================
@@ -65,11 +67,108 @@ domains:
 # =============================================================================
 
 subscription:
-  # -- Explicit SUB_PUBLIC_DOMAIN value.
-  # If empty, derived from ingress.hosts[0].host or gateway.hostnames[0] + publicPath.
+  # -- Enable the remnawave/subscription-page sidecar container in the panel Pod.
+  # When true, the sidecar serves the branded subscription page at its own ingress host,
+  # and SUB_PUBLIC_DOMAIN derives from subscription.ingress.hosts[0].host or
+  # subscription.gateway.hostnames[0] (plus publicPath).
+  enabled: false
+
+  image:
+    # -- Subscription-page image repository
+    repository: remnawave/subscription-page
+    # -- Image tag. Upstream does not publish a stable major tag, so `latest` is used
+    # by default; pin by digest for reproducibility in production.
+    tag: "latest"
+    # -- Image digest (takes precedence over tag)
+    digest: ""
+    # -- Image pull policy
+    pullPolicy: IfNotPresent
+
+  # -- Port the subscription-page listens on (APP_PORT in the sidecar container)
+  port: 3010
+
+  # -- REMNAWAVE_PANEL_URL for the sidecar. Leave empty to derive
+  # http://localhost:<app.port> (same-Pod localhost).
+  panelUrl: ""
+
+  # -- REMNAWAVE_API_TOKEN (stored in chart-managed Secret when existingSecret is unset).
+  # Generate via the panel UI: Settings → API Tokens.
+  apiToken: ""
+
+  # -- CUSTOM_SUB_PREFIX — serve subscription-page at a sub-path under its host.
+  # Do NOT include leading or trailing slashes. Empty means serve at the root.
+  customSubPrefix: ""
+
+  # -- Marzban legacy subscription link support
+  marzbanLegacy:
+    enabled: false
+    # -- MARZBAN_LEGACY_SECRET_KEY (stored in Secret)
+    secretKey: ""
+
+  # -- CADDY_AUTH_API_TOKEN — the X-Api-Key used when routing panel API calls through
+  # the Caddy-with-security addon (stored in Secret).
+  caddyAuthApiToken: ""
+
+  # -- Explicit SUB_PUBLIC_DOMAIN value (always highest precedence).
+  # If empty, derived from the subscription ingress/gateway host (when enabled=true)
+  # or the panel ingress/gateway host (when enabled=false) plus publicPath.
   publicDomain: ""
-  # -- Path suffix appended when deriving SUB_PUBLIC_DOMAIN
+
+  # -- Path suffix appended when deriving SUB_PUBLIC_DOMAIN.
+  # NOTE: the semantics differ between modes:
+  #   - enabled=false: appended to the panel host (default "/api/sub" — panel serves
+  #     raw subscription data at /api/sub).
+  #   - enabled=true: appended to the subscription-page host. Leave empty when the
+  #     page serves at the root; set to "/<CUSTOM_SUB_PREFIX>" (with leading slash)
+  #     when customSubPrefix is non-empty.
   publicPath: "/api/sub"
+
+  # -- Ingress hosts for the subscription-page (used when ingress.enabled=true).
+  # Mirrors ingress.hosts structure.
+  ingress:
+    hosts: []
+    # - host: subs.example.com
+    #   paths:
+    #     - path: /
+    #       pathType: Prefix
+    tls: []
+    # - secretName: subs-tls
+    #   hosts:
+    #     - subs.example.com
+
+  # -- Gateway API hostnames for the subscription-page (used when gateway.enabled=true).
+  # parentRefs default to the panel HTTPRoute's parentRefs; override here to differ.
+  gateway:
+    hostnames: []
+    parentRefs: []
+
+  # -- Resource requests and limits for the sidecar container
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+  # -- Probes for the sidecar. Default to tcpSocket against the subscription port.
+  # Override liveness.httpGet or liveness.exec if upstream adds a health endpoint.
+  probes:
+    liveness:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+      successThreshold: 1
+    readiness:
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+      successThreshold: 1
+
+  # -- Container security context for the sidecar
+  securityContext: {}
 
 # =============================================================================
 # Documentation

@@ -81,6 +81,65 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+        {{- if .Values.subscription.enabled }}
+        - name: subscription-page
+          image: {{ include "remnawave-panel.subscription.image" . | quote }}
+          imagePullPolicy: {{ .Values.subscription.image.pullPolicy }}
+          ports:
+            - name: subscription
+              containerPort: {{ .Values.subscription.port }}
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "remnawave-panel.fullname" . }}
+            - secretRef:
+                name: {{ include "remnawave-panel.secretName" . }}
+          env:
+            - name: APP_PORT
+              value: {{ .Values.subscription.port | quote }}
+            - name: REMNAWAVE_PANEL_URL
+              value: {{ default (printf "http://localhost:%v" .Values.app.port) .Values.subscription.panelUrl | quote }}
+          livenessProbe:
+            {{- if .Values.subscription.probes.liveness.httpGet }}
+            httpGet:
+              {{- toYaml .Values.subscription.probes.liveness.httpGet | nindent 14 }}
+            {{- else if .Values.subscription.probes.liveness.exec }}
+            exec:
+              {{- toYaml .Values.subscription.probes.liveness.exec | nindent 14 }}
+            {{- else }}
+            tcpSocket:
+              port: subscription
+            {{- end }}
+            initialDelaySeconds: {{ .Values.subscription.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.subscription.probes.liveness.periodSeconds }}
+            timeoutSeconds: {{ .Values.subscription.probes.liveness.timeoutSeconds }}
+            failureThreshold: {{ .Values.subscription.probes.liveness.failureThreshold }}
+            successThreshold: {{ .Values.subscription.probes.liveness.successThreshold }}
+          readinessProbe:
+            {{- if .Values.subscription.probes.readiness.httpGet }}
+            httpGet:
+              {{- toYaml .Values.subscription.probes.readiness.httpGet | nindent 14 }}
+            {{- else if .Values.subscription.probes.readiness.exec }}
+            exec:
+              {{- toYaml .Values.subscription.probes.readiness.exec | nindent 14 }}
+            {{- else }}
+            tcpSocket:
+              port: subscription
+            {{- end }}
+            initialDelaySeconds: {{ .Values.subscription.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.subscription.probes.readiness.periodSeconds }}
+            timeoutSeconds: {{ .Values.subscription.probes.readiness.timeoutSeconds }}
+            failureThreshold: {{ .Values.subscription.probes.readiness.failureThreshold }}
+            successThreshold: {{ .Values.subscription.probes.readiness.successThreshold }}
+          {{- with .Values.subscription.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.subscription.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

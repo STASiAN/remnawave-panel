@@ -1,3 +1,6 @@
 {{- if and .Values.ingress.enabled .Values.gateway.enabled }}
 {{- fail "ingress.enabled and gateway.enabled are mutually exclusive. Enable only one routing front-end." }}
 {{- end }}
+{{- if and .Values.subscription.enabled (not .Values.ingress.enabled) (not .Values.gateway.enabled) }}
+{{- fail "subscription.enabled=true requires a routing front-end. Enable either ingress.enabled or gateway.enabled and configure subscription.ingress.hosts[] or subscription.gateway.hostnames[]." }}
+{{- end }}

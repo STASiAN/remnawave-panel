@@ -27,4 +27,39 @@ spec:
       backendRefs:
         - name: {{ include "remnawave-panel.fullname" . }}
           port: {{ .Values.app.port }}
+{{- if and .Values.subscription.enabled (gt (len .Values.subscription.gateway.hostnames) 0) }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "remnawave-panel.fullname" . }}-subscription
+  labels:
+    {{- include "remnawave-panel.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    {{- if .Values.subscription.gateway.parentRefs }}
+    {{- range .Values.subscription.gateway.parentRefs }}
+    - {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- else }}
+    {{- if .Values.gateway.gatewayName }}
+    - name: {{ .Values.gateway.gatewayName }}
+    {{- end }}
+    {{- range .Values.gateway.parentRefs }}
+    - {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- end }}
+  hostnames:
+    {{- range .Values.subscription.gateway.hostnames }}
+    - {{ . | quote }}
+    {{- end }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: {{ include "remnawave-panel.fullname" . }}
+          port: {{ .Values.subscription.port }}
+{{- end }}
 {{- end }}

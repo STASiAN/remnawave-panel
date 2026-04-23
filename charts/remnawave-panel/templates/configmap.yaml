@@ -92,3 +92,13 @@ data:
   SERVICE_CLEAN_USAGE_HISTORY: {{ .Values.misc.cleanUsageHistory | quote }}
   SERVICE_DISABLE_USER_USAGE_RECORDS: {{ .Values.misc.disableUserUsageRecords | quote }}
   USER_USAGE_IGNORE_BELOW_BYTES: {{ .Values.misc.userUsageIgnoreBelowBytes | quote }}
+
+  {{- if .Values.subscription.enabled }}
+  # Subscription-page sidecar (consumed by the sidecar container; APP_PORT and
+  # REMNAWAVE_PANEL_URL are injected at the container level to avoid collisions
+  # with the panel container's APP_PORT and to support localhost derivation).
+  {{- if .Values.subscription.customSubPrefix }}
+  CUSTOM_SUB_PREFIX: {{ .Values.subscription.customSubPrefix | quote }}
+  {{- end }}
+  MARZBAN_LEGACY_LINK_ENABLED: {{ .Values.subscription.marzbanLegacy.enabled | quote }}
+  {{- end }}

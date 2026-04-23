@@ -143,6 +143,76 @@ gateway:
 `ingress.enabled` and `gateway.enabled` are mutually exclusive. Do not enable both.
 :::
 
+## Subscription Page Sidecar {#subscription-page-sidecar}
+
+The chart ships an opt-in sidecar container (`remnawave/subscription-page`) that serves the branded subscription page alongside the panel. This is the K8s counterpart to the compose ["Bundled" install](/install/subscription-page/bundled) — the sidecar lives in the panel Pod and talks to the panel over `localhost`.
+
+### Enable the sidecar
+
+```yaml title="values.yaml"
+subscription:
+  enabled: true
+  # Generate this via the panel UI (Settings → API Tokens) and inject via --set
+  # or an existingSecret rather than committing it to values.yaml.
+  apiToken: ""
+
+  # Subscription page is served at the root of this host.
+  # Set subscription.publicPath: "" so SUB_PUBLIC_DOMAIN doesn't get /api/sub appended.
+  publicPath: ""
+
+  ingress:
+    hosts:
+      - host: subs.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: subs-tls
+        hosts:
+          - subs.example.com
+```
+
+With `ingress.enabled: true` already set for the panel, the same `Ingress` resource picks up a second rule for `subs.example.com` pointing at the sidecar. Gateway API users set `subscription.gateway.hostnames` instead — the chart renders a second `HTTPRoute` inheriting the panel's `parentRefs`.
+
+### Generating the API token
+
+1. Install the chart with `subscription.apiToken: ""` first so the pod starts.
+2. Complete first-run panel setup, then go to Settings → API Tokens and generate a token.
+3. Apply it via helm upgrade:
+   ```bash
+   helm upgrade remnawave remnawave-panel/remnawave-panel \
+     --reuse-values \
+     --set subscription.apiToken=<generated-token>
+   ```
+4. The pod rolls automatically via the `checksum/secret` annotation.
+
+For production, put the token in an `existingSecret` under the `REMNAWAVE_API_TOKEN` key instead.
+
+### Migrating from compose-bundled subscription-page
+
+Preserve the existing `REMNAWAVE_API_TOKEN` from your compose `.env` to avoid invalidating subscription links clients have already fetched. Set `subscription.ingress.hosts[0].host` to the same subscription hostname already serving traffic so DNS cutover is the last step.
+
+### Custom sub-path under the subscription host
+
+If the subscription-page is served under a custom path (`CUSTOM_SUB_PREFIX=sub`), set both the upstream env and the derived URL suffix:
+
+```yaml title="values.yaml"
+subscription:
+  enabled: true
+  customSubPrefix: "sub"
+  publicPath: "/sub"
+  ingress:
+    hosts:
+      - host: panel.example.com
+        paths:
+          - path: /sub
+            pathType: Prefix
+```
+
+:::note
+When `subscription.enabled: true`, `SUB_PUBLIC_DOMAIN` is derived from `subscription.ingress.hosts[0].host` (or `subscription.gateway.hostnames[0]`) plus `subscription.publicPath`. Set `subscription.publicDomain` explicitly to bypass the derivation — useful when fronting the subscription page via a CDN or custom URL.
+:::
+
 ## Prometheus Monitoring
 
 Enable the ServiceMonitor for automatic Prometheus scraping:

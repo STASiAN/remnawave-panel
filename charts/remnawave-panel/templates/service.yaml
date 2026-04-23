@@ -19,5 +19,11 @@ spec:
       port: {{ .Values.metrics.port }}
       targetPort: metrics
       protocol: TCP
+    {{- if .Values.subscription.enabled }}
+    - name: subscription
+      port: {{ .Values.subscription.port }}
+      targetPort: subscription
+      protocol: TCP
+    {{- end }}
   selector:
     {{- include "remnawave-panel.selectorLabels" . | nindent 4 }}

@@ -3,7 +3,37 @@ entries:
   remnawave-panel:
   - apiVersion: v2
     appVersion: "2"
-    created: "2026-04-23T10:58:20.886124971Z"
+    created: "2026-04-23T11:16:13.387996697Z"
+    dependencies:
+    - alias: cnpg
+      condition: cnpg.enabled
+      name: cluster
+      repository: https://cloudnative-pg.github.io/charts
+      version: 0.6.0
+    - condition: redis-ha.enabled
+      name: redis-ha
+      repository: https://dandydeveloper.github.io/charts/
+      version: 4.35.10
+    description: A Helm chart for deploying Remnawave Panel on Kubernetes
+    digest: 3a799a23631d0ac6c45065505d8c4a196fd873db1e52e91c5bb3e1d485f76fbc
+    home: https://remnawave.github.io/panel
+    keywords:
+    - remnawave
+    - vpn
+    - panel
+    maintainers:
+    - name: remnawave
+    name: remnawave-panel
+    sources:
+    - https://github.com/remnawave/backend
+    - https://github.com/remnawave/remnawave-panel
+    type: application
+    urls:
+    - https://stasian.github.io/remnawave-panel/remnawave-panel-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
+    appVersion: "2"
+    created: "2026-04-23T11:16:13.381279426Z"
     dependencies:
     - alias: cnpg
       condition: cnpg.enabled
@@ -31,4 +61,4 @@ entries:
     urls:
     - https://stasian.github.io/remnawave-panel/remnawave-panel-0.1.0.tgz
     version: 0.1.0
-generated: "2026-04-23T10:58:20.878795561Z"
+generated: "2026-04-23T11:16:13.374083699Z"

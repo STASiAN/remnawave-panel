@@ -3,7 +3,37 @@ entries:
   remnawave-panel:
   - apiVersion: v2
     appVersion: "2"
-    created: "2026-04-23T11:43:09.0474547Z"
+    created: "2026-04-23T12:31:16.056043772Z"
+    dependencies:
+    - alias: cnpg
+      condition: cnpg.enabled
+      name: cluster
+      repository: https://cloudnative-pg.github.io/charts
+      version: 0.6.0
+    - condition: valkey.enabled
+      name: valkey
+      repository: https://charts.bitnami.com/bitnami
+      version: 5.5.0
+    description: A Helm chart for deploying Remnawave Panel on Kubernetes
+    digest: ec080b71a584fccf00d289989218999cbd032a3219c593bd6177c3bc59fe71cb
+    home: https://remnawave.github.io/panel
+    keywords:
+    - remnawave
+    - vpn
+    - panel
+    maintainers:
+    - name: remnawave
+    name: remnawave-panel
+    sources:
+    - https://github.com/remnawave/backend
+    - https://github.com/remnawave/remnawave-panel
+    type: application
+    urls:
+    - https://stasian.github.io/remnawave-panel/remnawave-panel-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v2
+    appVersion: "2"
+    created: "2026-04-23T12:31:16.045674796Z"
     dependencies:
     - alias: cnpg
       condition: cnpg.enabled
@@ -33,7 +63,7 @@ entries:
     version: 0.2.1
   - apiVersion: v2
     appVersion: "2"
-    created: "2026-04-23T11:43:09.040182167Z"
+    created: "2026-04-23T12:31:16.039527113Z"
     dependencies:
     - alias: cnpg
       condition: cnpg.enabled
@@ -63,7 +93,7 @@ entries:
     version: 0.2.0
   - apiVersion: v2
     appVersion: "2"
-    created: "2026-04-23T11:43:09.033389393Z"
+    created: "2026-04-23T12:31:16.032878862Z"
     dependencies:
     - alias: cnpg
       condition: cnpg.enabled
@@ -93,7 +123,7 @@ entries:
     version: 0.1.1
   - apiVersion: v2
     appVersion: "2"
-    created: "2026-04-23T11:43:09.026456659Z"
+    created: "2026-04-23T12:31:16.025986151Z"
     dependencies:
     - alias: cnpg
       condition: cnpg.enabled
@@ -121,4 +151,4 @@ entries:
     urls:
     - https://stasian.github.io/remnawave-panel/remnawave-panel-0.1.0.tgz
     version: 0.1.0
-generated: "2026-04-23T11:43:09.019123538Z"
+generated: "2026-04-23T12:31:16.018715578Z"

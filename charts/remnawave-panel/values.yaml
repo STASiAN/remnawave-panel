@@ -141,6 +141,8 @@ subscription:
   gateway:
     hostnames: []
     parentRefs: []
+    # -- Annotations for the subscription HTTPRoute resource
+    annotations: {}
 
   # -- Resource requests and limits for the sidecar container
   resources:
@@ -404,10 +406,16 @@ gateway:
   gatewayName: ""
   # -- Hostnames for the HTTPRoute
   hostnames: []
+  # -- Annotations for the chart-managed Gateway resource (e.g. external-dns,
+  # cert-manager, controller-specific hints)
+  annotations: {}
   # -- TLS configuration for chart-managed Gateway
   tls: {}
   # -- Additional parentRefs for the HTTPRoute
   parentRefs: []
+  httpRoute:
+    # -- Annotations for the panel HTTPRoute resource
+    annotations: {}
 
 # =============================================================================
 # CNPG PostgreSQL Subchart (cluster)

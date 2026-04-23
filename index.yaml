@@ -3,6 +3,42 @@ entries:
   remnawave-panel:
   - annotations:
       artifacthub.io/changes: |
+        - kind: fixed
+          description: |
+            Route liveness/readiness probes to the metrics port, where the
+            panel now serves /health.
+    apiVersion: v2
+    appVersion: "2"
+    created: "2026-04-23T13:58:14.228905696Z"
+    dependencies:
+    - alias: cnpg
+      condition: cnpg.enabled
+      name: cluster
+      repository: https://cloudnative-pg.github.io/charts
+      version: 0.6.0
+    - condition: redis-ha.enabled
+      name: redis-ha
+      repository: https://dandydeveloper.github.io/charts/
+      version: 4.35.10
+    description: A Helm chart for deploying Remnawave Panel on Kubernetes
+    digest: 0d26da7edd2633014eac1fe722f56646ec7a97e31770be3a1741228a77f76b62
+    home: https://remnawave.github.io/panel
+    keywords:
+    - remnawave
+    - vpn
+    - panel
+    maintainers:
+    - name: remnawave
+    name: remnawave-panel
+    sources:
+    - https://github.com/remnawave/backend
+    - https://github.com/remnawave/remnawave-panel
+    type: application
+    urls:
+    - https://stasian.github.io/remnawave-panel/remnawave-panel-0.3.2.tgz
+    version: 0.3.2
+  - annotations:
+      artifacthub.io/changes: |
         - kind: removed
           description: |
             BREAKING: Gateway API support (gateway.*, subscription.gateway.*,
@@ -10,7 +46,7 @@ entries:
             see docs/install/helm-chart.md "Migration: removing Gateway API".
     apiVersion: v2
     appVersion: "2"
-    created: "2026-04-23T13:42:06.521682757Z"
+    created: "2026-04-23T13:58:14.22136971Z"
     dependencies:
     - alias: cnpg
       condition: cnpg.enabled
@@ -40,7 +76,7 @@ entries:
     version: 0.3.1
   - apiVersion: v2
     appVersion: "2"
-    created: "2026-04-23T13:42:06.513750469Z"
+    created: "2026-04-23T13:58:14.215251899Z"
     dependencies:
     - alias: cnpg
       condition: cnpg.enabled
@@ -70,7 +106,7 @@ entries:
     version: 0.3.0
   - apiVersion: v2
     appVersion: "2"
-    created: "2026-04-23T13:42:06.50327774Z"
+    created: "2026-04-23T13:58:14.204271499Z"
     dependencies:
     - alias: cnpg
       condition: cnpg.enabled
@@ -100,7 +136,7 @@ entries:
     version: 0.2.1
   - apiVersion: v2
     appVersion: "2"
-    created: "2026-04-23T13:42:06.496185595Z"
+    created: "2026-04-23T13:58:14.197346365Z"
     dependencies:
     - alias: cnpg
       condition: cnpg.enabled
@@ -130,7 +166,7 @@ entries:
     version: 0.2.0
   - apiVersion: v2
     appVersion: "2"
-    created: "2026-04-23T13:42:06.48997951Z"
+    created: "2026-04-23T13:58:14.190384249Z"
     dependencies:
     - alias: cnpg
       condition: cnpg.enabled
@@ -160,7 +196,7 @@ entries:
     version: 0.1.1
   - apiVersion: v2
     appVersion: "2"
-    created: "2026-04-23T13:42:06.483077277Z"
+    created: "2026-04-23T13:58:14.183802651Z"
     dependencies:
     - alias: cnpg
       condition: cnpg.enabled
@@ -188,4 +224,4 @@ entries:
     urls:
     - https://stasian.github.io/remnawave-panel/remnawave-panel-0.1.0.tgz
     version: 0.1.0
-generated: "2026-04-23T13:42:06.475756633Z"
+generated: "2026-04-23T13:58:14.176243233Z"

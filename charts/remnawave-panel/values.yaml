@@ -1,0 +1,369 @@
+# -- Number of panel replicas
+replicaCount: 1
+
+image:
+  # -- Container image repository
+  repository: remnawave/backend
+  # -- Image tag (defaults to appVersion)
+  tag: ""
+  # -- Image digest (takes precedence over tag)
+  digest: ""
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  # -- Image pull secrets
+  pullSecrets: []
+
+# -- Number of API instances per pod (in-process Node.js clustering).
+# On Kubernetes, prefer increasing replicaCount over apiInstances.
+apiInstances: 1
+
+# -- Name of an existing Secret containing all sensitive env vars.
+# When set, the chart-managed Secret is not created.
+# Required keys: JWT_AUTH_SECRET, JWT_API_TOKENS_SECRET, METRICS_PASS
+# Optional keys: DATABASE_URL (when cnpg.enabled=false), WEBHOOK_SECRET_HEADER, TELEGRAM_BOT_TOKEN, REDIS_PASSWORD
+existingSecret: ""
+
+# =============================================================================
+# App
+# =============================================================================
+
+app:
+  # -- Application port (APP_PORT)
+  port: 3000
+
+# =============================================================================
+# Metrics / Prometheus
+# =============================================================================
+
+metrics:
+  # -- Metrics port (METRICS_PORT)
+  port: 3001
+  # -- Metrics basic-auth user (METRICS_USER)
+  user: "admin"
+  # -- Metrics basic-auth password (METRICS_PASS) — stored in Secret
+  pass: ""
+  serviceMonitor:
+    # -- Create a Prometheus Operator ServiceMonitor
+    enabled: false
+    # -- Scrape interval
+    interval: "30s"
+    # -- Additional labels for the ServiceMonitor
+    labels: {}
+
+# =============================================================================
+# Domains
+# =============================================================================
+
+domains:
+  # -- CORS origin (FRONT_END_DOMAIN). Use "*" for wildcard.
+  frontEnd: "*"
+  # -- Panel domain for direct links in notifications (PANEL_DOMAIN)
+  panel: ""
+
+# =============================================================================
+# Subscription
+# =============================================================================
+
+subscription:
+  # -- Explicit SUB_PUBLIC_DOMAIN value.
+  # If empty, derived from ingress.hosts[0].host or gateway.hostnames[0] + publicPath.
+  publicDomain: ""
+  # -- Path suffix appended when deriving SUB_PUBLIC_DOMAIN
+  publicPath: "/api/sub"
+
+# =============================================================================
+# Documentation
+# =============================================================================
+
+docs:
+  # -- Enable built-in API docs (IS_DOCS_ENABLED)
+  enabled: false
+  # -- Swagger UI path (SWAGGER_PATH)
+  swaggerPath: "/docs"
+  # -- Scalar UI path (SCALAR_PATH)
+  scalarPath: "/scalar"
+
+# =============================================================================
+# JWT
+# =============================================================================
+
+jwt:
+  # -- Auth JWT secret (JWT_AUTH_SECRET) — stored in Secret
+  authSecret: ""
+  # -- API tokens JWT secret (JWT_API_TOKENS_SECRET) — stored in Secret
+  apiTokensSecret: ""
+  # -- Auth JWT lifetime in hours, 12-168 (JWT_AUTH_LIFETIME)
+  authLifetime: 12
+
+# =============================================================================
+# Telegram Notifications
+# =============================================================================
+
+telegram:
+  # -- Enable Telegram notifications (IS_TELEGRAM_NOTIFICATIONS_ENABLED)
+  enabled: false
+  # -- Bot token (TELEGRAM_BOT_TOKEN) — stored in Secret
+  botToken: ""
+  # -- Custom Bot API root URL (TELEGRAM_BOT_API_ROOT)
+  botApiRoot: ""
+  # -- Proxy for Telegram Bot, e.g. socks5://user:pass@host:port (TELEGRAM_BOT_PROXY)
+  botProxy: ""
+  # -- User event notifications chat (TELEGRAM_NOTIFY_USERS), format: chat_id or chat_id:thread_id
+  notifyUsers: ""
+  # -- Node event notifications chat (TELEGRAM_NOTIFY_NODES)
+  notifyNodes: ""
+  # -- CRM event notifications chat (TELEGRAM_NOTIFY_CRM)
+  notifyCrm: ""
+  # -- Service event notifications chat (TELEGRAM_NOTIFY_SERVICE)
+  notifyService: ""
+  # -- Torrent blocker event notifications chat (TELEGRAM_NOTIFY_TBLOCKER)
+  notifyTblocker: ""
+
+# =============================================================================
+# Webhook
+# =============================================================================
+
+webhook:
+  # -- Enable webhook notifications (WEBHOOK_ENABLED)
+  enabled: false
+  # -- Webhook URL (WEBHOOK_URL)
+  url: ""
+  # -- Webhook signature key, min 32 chars (WEBHOOK_SECRET_HEADER) — stored in Secret
+  secretHeader: ""
+
+# =============================================================================
+# Bandwidth Usage Notifications
+# =============================================================================
+
+bandwidthNotifications:
+  # -- Enable bandwidth usage notifications (BANDWIDTH_USAGE_NOTIFICATIONS_ENABLED)
+  enabled: false
+  # -- Threshold array in ASC order, e.g. "[60, 80]" (BANDWIDTH_USAGE_NOTIFICATIONS_THRESHOLD)
+  threshold: ""
+
+# =============================================================================
+# Not Connected Users Notifications
+# =============================================================================
+
+notConnectedUsersNotifications:
+  # -- Enable not-connected-users notifications (NOT_CONNECTED_USERS_NOTIFICATIONS_ENABLED)
+  enabled: false
+  # -- Hours array in ASC order, e.g. "[6, 24, 48]" (NOT_CONNECTED_USERS_NOTIFICATIONS_AFTER_HOURS)
+  afterHours: ""
+
+# =============================================================================
+# Miscellaneous
+# =============================================================================
+
+misc:
+  # -- Short UUID length for subscriptions (SHORT_UUID_LENGTH)
+  shortUuidLength: 16
+  # -- Enable HTTP request logging (IS_HTTP_LOGGING_ENABLED)
+  httpLoggingEnabled: false
+  # -- Enable debug logs (ENABLE_DEBUG_LOGS)
+  debugLogsEnabled: false
+  # -- Enable cleaning of usage history (SERVICE_CLEAN_USAGE_HISTORY)
+  cleanUsageHistory: false
+  # -- Disable recording of user usage data (SERVICE_DISABLE_USER_USAGE_RECORDS)
+  disableUserUsageRecords: false
+  # -- Ignore user usage below this byte threshold (USER_USAGE_IGNORE_BELOW_BYTES)
+  userUsageIgnoreBelowBytes: 0
+
+# =============================================================================
+# External Database (used when cnpg.enabled=false)
+# =============================================================================
+
+externalDatabase:
+  # -- Full PostgreSQL connection URL, e.g. postgresql://user:pass@host:5432/db
+  url: ""
+
+# =============================================================================
+# External Redis (used when redis-ha.enabled=false)
+# =============================================================================
+
+externalRedis:
+  # -- Redis host
+  host: ""
+  # -- Redis port
+  port: 6379
+
+# =============================================================================
+# Redis (shared settings for both bundled and external)
+# =============================================================================
+
+redis:
+  # -- Redis database index (REDIS_DB)
+  db: 0
+  # -- Redis password (REDIS_PASSWORD) — stored in Secret. Leave empty for no auth.
+  password: ""
+
+# =============================================================================
+# Health Probes
+# =============================================================================
+
+probes:
+  liveness:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+  readiness:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+    successThreshold: 1
+
+# =============================================================================
+# Service
+# =============================================================================
+
+service:
+  # -- Service type (ClusterIP, NodePort, LoadBalancer)
+  type: ClusterIP
+  # -- Additional service annotations
+  annotations: {}
+
+# =============================================================================
+# ServiceAccount
+# =============================================================================
+
+serviceAccount:
+  # -- Create a ServiceAccount
+  create: true
+  # -- ServiceAccount name (auto-generated if empty)
+  name: ""
+  # -- Additional annotations
+  annotations: {}
+
+# =============================================================================
+# Pod configuration
+# =============================================================================
+
+# -- Resource requests and limits
+resources: {}
+  # limits:
+  #   cpu: 2000m
+  #   memory: 2Gi
+  # requests:
+  #   cpu: 500m
+  #   memory: 512Mi
+
+# -- Additional pod annotations
+podAnnotations: {}
+
+# -- Pod security context
+podSecurityContext: {}
+
+# -- Container security context
+securityContext: {}
+
+# -- Node selector
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Affinity rules
+affinity: {}
+
+# =============================================================================
+# Ingress
+# =============================================================================
+
+ingress:
+  # -- Enable Ingress resource
+  enabled: false
+  # -- Ingress class name
+  className: ""
+  # -- Additional annotations
+  annotations: {}
+  hosts:
+    - host: panel.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  # -- TLS configuration
+  tls: []
+  #  - secretName: panel-tls
+  #    hosts:
+  #      - panel.example.com
+
+# =============================================================================
+# Gateway API
+# =============================================================================
+
+gateway:
+  # -- Enable Gateway API HTTPRoute (mutually exclusive with ingress.enabled)
+  enabled: false
+  # -- Create a chart-managed Gateway resource
+  createGateway: false
+  # -- GatewayClass name (required when createGateway=true)
+  gatewayClassName: ""
+  # -- Gateway name to reference in HTTPRoute parentRefs
+  gatewayName: ""
+  # -- Hostnames for the HTTPRoute
+  hostnames: []
+  # -- TLS configuration for chart-managed Gateway
+  tls: {}
+  # -- Additional parentRefs for the HTTPRoute
+  parentRefs: []
+
+# =============================================================================
+# CNPG PostgreSQL Subchart (cluster)
+# =============================================================================
+# See https://github.com/cloudnative-pg/charts/tree/main/charts/cluster
+# Requires the CloudNative-PG operator to be installed in the cluster:
+#   helm install cnpg cloudnative-pg/cloudnative-pg --namespace cnpg-system --create-namespace
+
+cnpg:
+  # -- Deploy a CNPG Cluster for PostgreSQL
+  enabled: true
+  # -- Override subchart name to get predictable service names (<release>-cnpg-rw)
+  nameOverride: cnpg
+  type: postgresql
+  version:
+    postgresql: "17"
+  cluster:
+    instances: 3
+    storage:
+      size: 8Gi
+      storageClass: ""
+    walStorage:
+      enabled: false
+    resources: {}
+    monitoring:
+      enabled: false
+    initdb:
+      database: remnawave
+      owner: remnawave
+  backups:
+    enabled: false
+
+# =============================================================================
+# Redis HA Subchart
+# =============================================================================
+# See https://github.com/DandyDeveloper/charts/tree/master/charts/redis-ha
+
+redis-ha:
+  # -- Deploy a Redis HA StatefulSet with Sentinel and HAProxy
+  enabled: true
+  replicas: 3
+  haproxy:
+    enabled: true
+    replicas: 3
+  redis:
+    config:
+      maxmemory-policy: noeviction
+  sentinel:
+    config:
+      down-after-milliseconds: 10000
+      failover-timeout: 180000
+      parallel-syncs: 5
+  persistentVolume:
+    enabled: true
+    size: 10Gi
+    storageClass: ""
+  auth: false
+  existingSecret: ""

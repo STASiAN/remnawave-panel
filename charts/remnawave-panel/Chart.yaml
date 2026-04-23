@@ -1,0 +1,26 @@
+apiVersion: v2
+name: remnawave-panel
+description: A Helm chart for deploying Remnawave Panel on Kubernetes
+type: application
+version: 0.1.0
+appVersion: "2"
+home: https://remnawave.github.io/panel
+sources:
+  - https://github.com/remnawave/backend
+  - https://github.com/remnawave/remnawave-panel
+keywords:
+  - remnawave
+  - vpn
+  - panel
+maintainers:
+  - name: remnawave
+dependencies:
+  - name: cluster
+    version: "0.6.0"
+    repository: "https://cloudnative-pg.github.io/charts"
+    alias: cnpg
+    condition: cnpg.enabled
+  - name: redis-ha
+    version: "4.35.10"
+    repository: "https://dandydeveloper.github.io/charts/"
+    condition: redis-ha.enabled

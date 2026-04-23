@@ -2,7 +2,7 @@ apiVersion: v2
 name: remnawave-panel
 description: A Helm chart for deploying Remnawave Panel on Kubernetes
 type: application
-version: 0.3.1
+version: 0.3.2
 appVersion: "2"
 home: https://remnawave.github.io/panel
 sources:
@@ -16,11 +16,10 @@ maintainers:
   - name: remnawave
 annotations:
   artifacthub.io/changes: |
-    - kind: removed
+    - kind: fixed
       description: |
-        BREAKING: Gateway API support (gateway.*, subscription.gateway.*,
-        chart-managed Gateway, HTTPRoute) removed. Migrate to ingress.* —
-        see docs/install/helm-chart.md "Migration: removing Gateway API".
+        Route liveness/readiness probes to the metrics port, where the
+        panel now serves /health.
 dependencies:
   - name: cluster
     version: "0.6.0"

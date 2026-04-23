@@ -1,0 +1,9 @@
+dependencies:
+- name: cluster
+  repository: https://cloudnative-pg.github.io/charts
+  version: 0.6.0
+- name: redis-ha
+  repository: https://dandydeveloper.github.io/charts/
+  version: 4.35.10
+digest: sha256:21d3a2233f22c2ca52b85de4925ea27c9d0dddddd77a7fee04f2b2bc30bac2ed
+generated: "2026-04-23T10:16:13.393868+03:00"

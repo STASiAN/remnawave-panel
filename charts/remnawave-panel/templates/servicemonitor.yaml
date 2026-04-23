@@ -1,0 +1,26 @@
+{{- if .Values.metrics.serviceMonitor.enabled -}}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "remnawave-panel.fullname" . }}
+  labels:
+    {{- include "remnawave-panel.labels" . | nindent 4 }}
+    {{- with .Values.metrics.serviceMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "remnawave-panel.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: {{ .Values.metrics.serviceMonitor.interval }}
+      basicAuth:
+        username:
+          name: {{ include "remnawave-panel.secretName" . }}
+          key: METRICS_USER
+        password:
+          name: {{ include "remnawave-panel.secretName" . }}
+          key: METRICS_PASS
+{{- end }}

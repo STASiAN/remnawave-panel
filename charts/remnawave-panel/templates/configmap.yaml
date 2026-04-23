@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "remnawave-panel.fullname" . }}
+  labels:
+    {{- include "remnawave-panel.labels" . | nindent 4 }}
+data:
+  # Ports
+  APP_PORT: {{ .Values.app.port | quote }}
+  METRICS_PORT: {{ .Values.metrics.port | quote }}
+
+  # Scaling
+  API_INSTANCES: {{ .Values.apiInstances | quote }}
+
+  # Redis
+  REDIS_HOST: {{ include "remnawave-panel.redis.effectiveHost" . | quote }}
+  REDIS_PORT: {{ include "remnawave-panel.redis.effectivePort" . | quote }}
+  {{- if .Values.redis.db }}
+  REDIS_DB: {{ .Values.redis.db | quote }}
+  {{- end }}
+
+  # Domains
+  {{- if .Values.domains.frontEnd }}
+  FRONT_END_DOMAIN: {{ .Values.domains.frontEnd | quote }}
+  {{- end }}
+  SUB_PUBLIC_DOMAIN: {{ include "remnawave-panel.subPublicDomain" . | quote }}
+  {{- if .Values.domains.panel }}
+  PANEL_DOMAIN: {{ .Values.domains.panel | quote }}
+  {{- end }}
+
+  # Metrics
+  METRICS_USER: {{ .Values.metrics.user | quote }}
+
+  # JWT
+  JWT_AUTH_LIFETIME: {{ .Values.jwt.authLifetime | quote }}
+
+  # Documentation
+  IS_DOCS_ENABLED: {{ .Values.docs.enabled | quote }}
+  {{- if .Values.docs.swaggerPath }}
+  SWAGGER_PATH: {{ .Values.docs.swaggerPath | quote }}
+  {{- end }}
+  {{- if .Values.docs.scalarPath }}
+  SCALAR_PATH: {{ .Values.docs.scalarPath | quote }}
+  {{- end }}
+
+  # Telegram
+  IS_TELEGRAM_NOTIFICATIONS_ENABLED: {{ .Values.telegram.enabled | quote }}
+  {{- if .Values.telegram.botApiRoot }}
+  TELEGRAM_BOT_API_ROOT: {{ .Values.telegram.botApiRoot | quote }}
+  {{- end }}
+  {{- if .Values.telegram.botProxy }}
+  TELEGRAM_BOT_PROXY: {{ .Values.telegram.botProxy | quote }}
+  {{- end }}
+  {{- if .Values.telegram.notifyUsers }}
+  TELEGRAM_NOTIFY_USERS: {{ .Values.telegram.notifyUsers | quote }}
+  {{- end }}
+  {{- if .Values.telegram.notifyNodes }}
+  TELEGRAM_NOTIFY_NODES: {{ .Values.telegram.notifyNodes | quote }}
+  {{- end }}
+  {{- if .Values.telegram.notifyCrm }}
+  TELEGRAM_NOTIFY_CRM: {{ .Values.telegram.notifyCrm | quote }}
+  {{- end }}
+  {{- if .Values.telegram.notifyService }}
+  TELEGRAM_NOTIFY_SERVICE: {{ .Values.telegram.notifyService | quote }}
+  {{- end }}
+  {{- if .Values.telegram.notifyTblocker }}
+  TELEGRAM_NOTIFY_TBLOCKER: {{ .Values.telegram.notifyTblocker | quote }}
+  {{- end }}
+
+  # Webhook
+  WEBHOOK_ENABLED: {{ .Values.webhook.enabled | quote }}
+  {{- if .Values.webhook.url }}
+  WEBHOOK_URL: {{ .Values.webhook.url | quote }}
+  {{- end }}
+
+  # Bandwidth usage notifications
+  BANDWIDTH_USAGE_NOTIFICATIONS_ENABLED: {{ .Values.bandwidthNotifications.enabled | quote }}
+  {{- if .Values.bandwidthNotifications.threshold }}
+  BANDWIDTH_USAGE_NOTIFICATIONS_THRESHOLD: {{ .Values.bandwidthNotifications.threshold | quote }}
+  {{- end }}
+
+  # Not connected users notifications
+  NOT_CONNECTED_USERS_NOTIFICATIONS_ENABLED: {{ .Values.notConnectedUsersNotifications.enabled | quote }}
+  {{- if .Values.notConnectedUsersNotifications.afterHours }}
+  NOT_CONNECTED_USERS_NOTIFICATIONS_AFTER_HOURS: {{ .Values.notConnectedUsersNotifications.afterHours | quote }}
+  {{- end }}
+
+  # Miscellaneous
+  SHORT_UUID_LENGTH: {{ .Values.misc.shortUuidLength | quote }}
+  IS_HTTP_LOGGING_ENABLED: {{ .Values.misc.httpLoggingEnabled | quote }}
+  ENABLE_DEBUG_LOGS: {{ .Values.misc.debugLogsEnabled | quote }}
+  SERVICE_CLEAN_USAGE_HISTORY: {{ .Values.misc.cleanUsageHistory | quote }}
+  SERVICE_DISABLE_USER_USAGE_RECORDS: {{ .Values.misc.disableUserUsageRecords | quote }}
+  USER_USAGE_IGNORE_BELOW_BYTES: {{ .Values.misc.userUsageIgnoreBelowBytes | quote }}

@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "replicaCount": { "type": "integer", "minimum": 1 },
+    "image": {
+      "type": "object",
+      "properties": {
+        "repository": { "type": "string" },
+        "tag": { "type": "string" },
+        "digest": { "type": "string" },
+        "pullPolicy": { "type": "string", "enum": ["Always", "Never", "IfNotPresent"] },
+        "pullSecrets": { "type": "array", "items": { "type": "object" } }
+      }
+    },
+    "apiInstances": { "type": ["integer", "string"] },
+    "existingSecret": { "type": "string" },
+    "app": {
+      "type": "object",
+      "properties": {
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "user": { "type": "string" },
+        "pass": { "type": "string" },
+        "serviceMonitor": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "interval": { "type": "string" },
+            "labels": { "type": "object" }
+          }
+        }
+      }
+    },
+    "domains": {
+      "type": "object",
+      "properties": {
+        "frontEnd": { "type": "string" },
+        "panel": { "type": "string" }
+      }
+    },
+    "subscription": {
+      "type": "object",
+      "properties": {
+        "publicDomain": { "type": "string" },
+        "publicPath": { "type": "string" }
+      }
+    },
+    "docs": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "swaggerPath": { "type": "string" },
+        "scalarPath": { "type": "string" }
+      }
+    },
+    "jwt": {
+      "type": "object",
+      "properties": {
+        "authSecret": { "type": "string" },
+        "apiTokensSecret": { "type": "string" },
+        "authLifetime": { "type": "integer", "minimum": 12, "maximum": 168 }
+      }
+    },
+    "telegram": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "botToken": { "type": "string" },
+        "botApiRoot": { "type": "string" },
+        "botProxy": { "type": "string" },
+        "notifyUsers": { "type": "string" },
+        "notifyNodes": { "type": "string" },
+        "notifyCrm": { "type": "string" },
+        "notifyService": { "type": "string" },
+        "notifyTblocker": { "type": "string" }
+      }
+    },
+    "webhook": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "url": { "type": "string" },
+        "secretHeader": { "type": "string" }
+      }
+    },
+    "bandwidthNotifications": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "threshold": { "type": "string" }
+      }
+    },
+    "notConnectedUsersNotifications": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "afterHours": { "type": "string" }
+      }
+    },
+    "misc": {
+      "type": "object",
+      "properties": {
+        "shortUuidLength": { "type": "integer", "minimum": 16, "maximum": 64 },
+        "httpLoggingEnabled": { "type": "boolean" },
+        "debugLogsEnabled": { "type": "boolean" },
+        "cleanUsageHistory": { "type": "boolean" },
+        "disableUserUsageRecords": { "type": "boolean" },
+        "userUsageIgnoreBelowBytes": { "type": "integer", "minimum": 0, "maximum": 1048576 }
+      }
+    },
+    "externalDatabase": {
+      "type": "object",
+      "properties": {
+        "url": { "type": "string" }
+      }
+    },
+    "externalRedis": {
+      "type": "object",
+      "properties": {
+        "host": { "type": "string" },
+        "port": { "type": "integer" }
+      }
+    },
+    "redis": {
+      "type": "object",
+      "properties": {
+        "db": { "type": "integer" },
+        "password": { "type": "string" }
+      }
+    },
+    "ingress": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" }
+      }
+    },
+    "gateway": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" }
+      }
+    }
+  },
+  "if": {
+    "properties": {
+      "ingress": { "properties": { "enabled": { "const": true } } },
+      "gateway": { "properties": { "enabled": { "const": true } } }
+    },
+    "required": ["ingress", "gateway"]
+  },
+  "then": false,
+  "additionalProperties": true
+}

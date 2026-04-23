@@ -1,0 +1,55 @@
+Remnawave Panel has been installed.
+
+{{- if .Values.cnpg.enabled }}
+
+==> CNPG PostgreSQL
+  The chart deploys a CloudNative-PG Cluster ({{ .Values.cnpg.cluster.instances }} instance(s)).
+  IMPORTANT: The CNPG operator must be installed in your cluster.
+  If not already installed:
+    helm install cnpg cloudnative-pg/cloudnative-pg --namespace cnpg-system --create-namespace
+  Read-write service: {{ include "remnawave-panel.cnpg.rw" . }}
+{{- else }}
+  Using external database: {{ .Values.externalDatabase.url | default "(set via existingSecret)" }}
+{{- end }}
+
+{{- if (index .Values "redis-ha" "enabled") }}
+
+==> Redis HA
+  3-replica Redis with Sentinel + HAProxy.
+  HAProxy service: {{ include "remnawave-panel.redis.host" . }}:6379
+{{- else }}
+  Using external Redis: {{ .Values.externalRedis.host }}:{{ .Values.externalRedis.port }}
+{{- end }}
+
+{{- if .Values.ingress.enabled }}
+
+==> Ingress
+  {{- range .Values.ingress.hosts }}
+  Host: {{ .host }}
+  {{- end }}
+{{- end }}
+
+{{- if .Values.gateway.enabled }}
+
+==> Gateway API
+  HTTPRoute created.
+  NOTE: Gateway API CRDs (gateway.networking.k8s.io/v1) must be installed.
+  {{- if .Values.gateway.createGateway }}
+  A chart-managed Gateway resource was also created.
+  {{- end }}
+{{- end }}
+
+{{- if and .Values.ingress.enabled (gt (len .Values.ingress.hosts) 0) }}
+{{- $ingressHost := (index .Values.ingress.hosts 0).host }}
+{{- $derivedSub := printf "%s%s" $ingressHost .Values.subscription.publicPath }}
+{{- if and .Values.subscription.publicDomain (ne .Values.subscription.publicDomain $derivedSub) }}
+
+WARNING: subscription.publicDomain ({{ .Values.subscription.publicDomain }}) differs from the
+ingress host-derived value ({{ $derivedSub }}). Subscription URLs may not match
+the ingress endpoint. This is expected if you front the panel with a CDN.
+{{- end }}
+{{- end }}
+
+==> Access
+  Panel:   http{{ if .Values.ingress.tls }}s{{ end }}://{{ if .Values.ingress.enabled }}{{ (index .Values.ingress.hosts 0).host }}{{ else if .Values.gateway.enabled }}{{ index .Values.gateway.hostnames 0 }}{{ else }}<cluster-ip>:{{ .Values.app.port }}{{ end }}
+  Metrics: <pod-ip>:{{ .Values.metrics.port }}/metrics (basic auth: {{ .Values.metrics.user }})

@@ -5,6 +5,41 @@ entries:
       artifacthub.io/changes: |
         - kind: changed
           description: |
+            Pin appVersion to the latest stable backend release 2.7.4.
+    apiVersion: v2
+    appVersion: 2.7.4
+    created: "2026-05-28T12:18:31.318987191Z"
+    dependencies:
+    - alias: cnpg
+      condition: cnpg.enabled
+      name: cluster
+      repository: https://cloudnative-pg.github.io/charts
+      version: 0.6.0
+    - condition: redis-ha.enabled
+      name: redis-ha
+      repository: https://dandydeveloper.github.io/charts/
+      version: 4.35.10
+    description: A Helm chart for deploying Remnawave Panel on Kubernetes
+    digest: 09e3a6ae68c5b9b09a9c09e0c3aa0a3cfcf6777c6fda0369062d63f85fed5b65
+    home: https://remnawave.github.io/panel
+    keywords:
+    - remnawave
+    - vpn
+    - panel
+    maintainers:
+    - name: remnawave
+    name: remnawave-panel
+    sources:
+    - https://github.com/remnawave/backend
+    - https://github.com/remnawave/remnawave-panel
+    type: application
+    urls:
+    - https://stasian.github.io/remnawave-panel/remnawave-panel-0.4.1.tgz
+    version: 0.4.1
+  - annotations:
+      artifacthub.io/changes: |
+        - kind: changed
+          description: |
             Split the panel and subscription routing into separate Ingress
             resources. The subscription Ingress is rendered only when
             subscription.enabled=true and supports its own className and
@@ -12,7 +47,7 @@ entries:
             ingress.annotations when unset.
     apiVersion: v2
     appVersion: "2"
-    created: "2026-04-23T15:51:16.779802656Z"
+    created: "2026-05-28T12:18:31.31187685Z"
     dependencies:
     - alias: cnpg
       condition: cnpg.enabled
@@ -48,7 +83,7 @@ entries:
             panel now serves /health.
     apiVersion: v2
     appVersion: "2"
-    created: "2026-04-23T15:51:16.772432595Z"
+    created: "2026-05-28T12:18:31.304698017Z"
     dependencies:
     - alias: cnpg
       condition: cnpg.enabled
@@ -85,7 +120,7 @@ entries:
             see docs/install/helm-chart.md "Migration: removing Gateway API".
     apiVersion: v2
     appVersion: "2"
-    created: "2026-04-23T15:51:16.766316058Z"
+    created: "2026-05-28T12:18:31.297693348Z"
     dependencies:
     - alias: cnpg
       condition: cnpg.enabled
@@ -115,7 +150,7 @@ entries:
     version: 0.3.1
   - apiVersion: v2
     appVersion: "2"
-    created: "2026-04-23T15:51:16.75902635Z"
+    created: "2026-05-28T12:18:31.291253681Z"
     dependencies:
     - alias: cnpg
       condition: cnpg.enabled
@@ -145,7 +180,7 @@ entries:
     version: 0.3.0
   - apiVersion: v2
     appVersion: "2"
-    created: "2026-04-23T15:51:16.748310621Z"
+    created: "2026-05-28T12:18:31.280365263Z"
     dependencies:
     - alias: cnpg
       condition: cnpg.enabled
@@ -175,7 +210,7 @@ entries:
     version: 0.2.1
   - apiVersion: v2
     appVersion: "2"
-    created: "2026-04-23T15:51:16.742053353Z"
+    created: "2026-05-28T12:18:31.273252722Z"
     dependencies:
     - alias: cnpg
       condition: cnpg.enabled
@@ -205,7 +240,7 @@ entries:
     version: 0.2.0
   - apiVersion: v2
     appVersion: "2"
-    created: "2026-04-23T15:51:16.734722058Z"
+    created: "2026-05-28T12:18:31.265966684Z"
     dependencies:
     - alias: cnpg
       condition: cnpg.enabled
@@ -235,7 +270,7 @@ entries:
     version: 0.1.1
   - apiVersion: v2
     appVersion: "2"
-    created: "2026-04-23T15:51:16.727778627Z"
+    created: "2026-05-28T12:18:31.259790008Z"
     dependencies:
     - alias: cnpg
       condition: cnpg.enabled
@@ -263,4 +298,4 @@ entries:
     urls:
     - https://stasian.github.io/remnawave-panel/remnawave-panel-0.1.0.tgz
     version: 0.1.0
-generated: "2026-04-23T15:51:16.720019201Z"
+generated: "2026-05-28T12:18:31.252097992Z"

@@ -2,8 +2,8 @@ apiVersion: v2
 name: remnawave-panel
 description: A Helm chart for deploying Remnawave Panel on Kubernetes
 type: application
-version: 0.4.1
-appVersion: "2.7.4"
+version: 0.5.0
+appVersion: "3.2.3"
 home: https://remnawave.github.io/panel
 sources:
   - https://github.com/remnawave/backend
@@ -18,7 +18,8 @@ annotations:
   artifacthub.io/changes: |
     - kind: changed
       description: |
-        Pin appVersion to the latest stable backend release 2.7.4.
+        Bump appVersion to backend 3.2.3 (2.x → 3.x major upgrade; runs DB
+        migrations). Enables Gateway API / injectHosts balancer features.
 dependencies:
   - name: cluster
     version: "0.6.0"

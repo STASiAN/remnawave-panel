@@ -67,10 +67,14 @@ domains:
 # =============================================================================
 
 subscription:
-  # -- Enable the remnawave/subscription-page sidecar container in the panel Pod.
-  # When true, the sidecar serves the branded subscription page at its own ingress host,
-  # and SUB_PUBLIC_DOMAIN derives from subscription.ingress.hosts[0].host (plus publicPath).
+  # -- Deploy remnawave/subscription-page as its own Deployment and Service.
+  # When true, it serves the branded subscription page at its own host, and
+  # SUB_PUBLIC_DOMAIN derives from subscription.ingress.hosts[0].host or
+  # subscription.gateway.hostnames[0] (plus publicPath).
   enabled: false
+
+  # -- Number of subscription-page replicas
+  replicaCount: 1
 
   image:
     # -- Subscription-page image repository
@@ -83,11 +87,11 @@ subscription:
     # -- Image pull policy
     pullPolicy: IfNotPresent
 
-  # -- Port the subscription-page listens on (APP_PORT in the sidecar container)
+  # -- Port the subscription-page listens on (APP_PORT in the subscription-page container)
   port: 3010
 
-  # -- REMNAWAVE_PANEL_URL for the sidecar. Leave empty to derive
-  # http://localhost:<app.port> (same-Pod localhost).
+  # -- REMNAWAVE_PANEL_URL for the subscription-page. Leave empty to derive
+  # http://<panel-service>:<app.port> (in-cluster panel Service).
   panelUrl: ""
 
   # -- REMNAWAVE_API_TOKEN (stored in chart-managed Secret when existingSecret is unset).
@@ -109,8 +113,8 @@ subscription:
   caddyAuthApiToken: ""
 
   # -- Explicit SUB_PUBLIC_DOMAIN value (always highest precedence).
-  # If empty, derived from the subscription Ingress host (when enabled=true)
-  # or the panel Ingress host (when enabled=false) plus publicPath.
+  # If empty, derived from the subscription ingress/gateway host (when enabled=true)
+  # or the panel ingress/gateway host (when enabled=false) plus publicPath.
   publicDomain: ""
 
   # -- Path suffix appended when deriving SUB_PUBLIC_DOMAIN.
@@ -141,7 +145,18 @@ subscription:
     #   hosts:
     #     - subs.example.com
 
-  # -- Resource requests and limits for the sidecar container
+  # -- Gateway API settings for the subscription-page (used when gateway.enabled=true).
+  # parentRefs default to the panel HTTPRoute's parentRefs; override here to differ.
+  gateway:
+    hostnames: []
+    parentRefs: []
+    # -- Annotations for the subscription HTTPRoute resource
+    annotations: {}
+
+  # -- Additional pod annotations for the subscription-page Deployment
+  podAnnotations: {}
+
+  # -- Resource requests and limits for the subscription-page container
   resources:
     requests:
       cpu: 50m
@@ -150,7 +165,7 @@ subscription:
       cpu: 500m
       memory: 256Mi
 
-  # -- Probes for the sidecar. Default to tcpSocket against the subscription port.
+  # -- Probes for the subscription-page. Default to tcpSocket against the subscription port.
   # Override liveness.httpGet or liveness.exec if upstream adds a health endpoint.
   probes:
     liveness:
@@ -166,7 +181,7 @@ subscription:
       failureThreshold: 3
       successThreshold: 1
 
-  # -- Container security context for the sidecar
+  # -- Container security context for the subscription-page
   securityContext: {}
 
 # =============================================================================
@@ -388,6 +403,36 @@ ingress:
   #  - secretName: panel-tls
   #    hosts:
   #      - panel.example.com
+
+# =============================================================================
+# Gateway API
+# =============================================================================
+# Requires Gateway API CRDs (gateway.networking.k8s.io/v1) in the cluster.
+
+gateway:
+  # -- Enable Gateway API HTTPRoute for the panel (mutually exclusive with ingress.enabled)
+  enabled: false
+  # -- Create a chart-managed Gateway resource
+  createGateway: false
+  # -- GatewayClass name (required when createGateway=true)
+  gatewayClassName: ""
+  # -- Name of an existing Gateway to reference in HTTPRoute parentRefs.
+  # Leave empty with createGateway=true to reference the chart-managed Gateway.
+  gatewayName: ""
+  # -- Hostnames for the panel HTTPRoute (first entry is also used as the
+  # chart-managed Gateway listener hostname)
+  hostnames: []
+  # -- Annotations for the chart-managed Gateway resource (e.g. external-dns,
+  # cert-manager, controller-specific hints)
+  annotations: {}
+  # -- TLS configuration for the chart-managed Gateway HTTPS listener
+  # (GatewayTLSConfig, e.g. {mode: Terminate, certificateRefs: [{name: panel-tls}]})
+  tls: {}
+  # -- Additional parentRefs for the panel HTTPRoute
+  parentRefs: []
+  httpRoute:
+    # -- Annotations for the panel HTTPRoute resource
+    annotations: {}
 
 # =============================================================================
 # CNPG PostgreSQL Subchart (cluster)

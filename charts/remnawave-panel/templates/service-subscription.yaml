@@ -1,0 +1,21 @@
+{{- if .Values.subscription.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "remnawave-panel.subscription.fullname" . }}
+  labels:
+    {{- include "remnawave-panel.subscription.labels" . | nindent 4 }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: subscription
+      port: {{ .Values.subscription.port }}
+      targetPort: subscription
+      protocol: TCP
+  selector:
+    {{- include "remnawave-panel.subscription.selectorLabels" . | nindent 4 }}
+{{- end }}

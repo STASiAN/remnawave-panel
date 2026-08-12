@@ -4,9 +4,9 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "remnawave-panel.fullname" . }}-subscription
+  name: {{ include "remnawave-panel.subscription.fullname" . }}
   labels:
-    {{- include "remnawave-panel.labels" . | nindent 4 }}
+    {{- include "remnawave-panel.subscription.labels" . | nindent 4 }}
   {{- with $annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -35,7 +35,7 @@ spec:
             pathType: {{ .pathType }}
             backend:
               service:
-                name: {{ include "remnawave-panel.fullname" $ }}
+                name: {{ include "remnawave-panel.subscription.fullname" $ }}
                 port:
                   name: subscription
           {{- end }}

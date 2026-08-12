@@ -2,7 +2,7 @@ apiVersion: v2
 name: remnawave-panel
 description: A Helm chart for deploying Remnawave Panel on Kubernetes
 type: application
-version: 0.5.0
+version: 0.6.0
 appVersion: "3.2.3"
 home: https://remnawave.github.io/panel
 sources:
@@ -16,10 +16,22 @@ maintainers:
   - name: remnawave
 annotations:
   artifacthub.io/changes: |
+    - kind: added
+      description: |
+        Re-add Gateway API support: gateway.* values render a panel HTTPRoute
+        (plus an optional chart-managed Gateway via gateway.createGateway), and
+        subscription.gateway.hostnames renders a subscription HTTPRoute backed
+        by the subscription Service. ingress.enabled and gateway.enabled remain
+        mutually exclusive; SUB_PUBLIC_DOMAIN derivation understands both.
+        Requires Gateway API CRDs (gateway.networking.k8s.io/v1).
     - kind: changed
       description: |
-        Bump appVersion to backend 3.2.3 (2.x → 3.x major upgrade; runs DB
-        migrations). Enables Gateway API / injectHosts balancer features.
+        Move subscription-page from a sidecar container in the panel Pod to its
+        own Deployment and Service (<fullname>-subscription). It now scales
+        independently via subscription.replicaCount and reaches the panel
+        through the panel Service instead of localhost. The subscription
+        Ingress backend points at the new Service; the panel Service no longer
+        exposes the subscription port.
 dependencies:
   - name: cluster
     version: "0.6.0"

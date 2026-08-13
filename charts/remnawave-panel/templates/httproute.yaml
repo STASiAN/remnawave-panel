@@ -15,6 +15,10 @@ spec:
     - name: {{ .Values.gateway.gatewayName }}
     {{- else if .Values.gateway.createGateway }}
     - name: {{ include "remnawave-panel.fullname" . }}
+      {{- if eq (include "remnawave-panel.gateway.httpsRedirect.render" .) "true" }}
+      {{- /* the redirect route owns the http listener; serve on https only */}}
+      sectionName: https
+      {{- end }}
     {{- end }}
     {{- range .Values.gateway.parentRefs }}
     - {{- toYaml . | nindent 6 }}

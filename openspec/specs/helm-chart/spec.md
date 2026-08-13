@@ -119,6 +119,49 @@ The chart SHALL provide an HTTP routing front-end via either a Kubernetes `Ingre
 - **THEN** the rendered output contains an `HTTPRoute` referencing an externally-owned `Gateway` via `parentRefs`
 - **AND** the rendered output contains no `Gateway` resource
 
+### Requirement: HTTP to HTTPS Redirect in Gateway Mode
+
+In Gateway API mode the chart SHALL render an HTTP→HTTPS redirect route by default, but only when it can attach that route to the Gateway's HTTP listener without competing with the serving route for the same listener.
+
+#### Scenario: Chart-managed Gateway redirects automatically
+
+- **WHEN** the chart is rendered with `gateway.enabled: true`, `gateway.createGateway: true` and `gateway.tls` set
+- **THEN** the rendered output contains a second `HTTPRoute` whose only rule carries a `RequestRedirect` filter with `scheme: https` and `statusCode: 301`, attached to the chart-managed Gateway's `http` listener via `sectionName`
+- **AND** the serving `HTTPRoute` attaches to that Gateway's `https` listener via `sectionName`
+
+#### Scenario: Externally-managed Gateway without redirect parentRefs renders no redirect
+
+- **WHEN** the chart is rendered with `gateway.enabled: true`, `gateway.parentRefs` pointing at an externally-managed Gateway, and `gateway.httpsRedirect.parentRefs` empty
+- **THEN** the rendered output contains no redirect `HTTPRoute`
+- **AND** the serving `HTTPRoute` is unchanged from the same values with `gateway.httpsRedirect.enabled: false`
+
+#### Scenario: Externally-managed Gateway with explicit redirect parentRefs
+
+- **WHEN** the chart is rendered with `gateway.httpsRedirect.parentRefs` naming the Gateway's HTTP listener and `gateway.parentRefs` naming its HTTPS listener
+- **THEN** the rendered output contains a redirect `HTTPRoute` attached to the HTTP listener and a serving `HTTPRoute` attached to the HTTPS listener
+
+#### Scenario: Overlapping listeners are rejected
+
+- **WHEN** the chart is rendered with a `gateway.httpsRedirect.parentRefs` entry that resolves to the same Gateway and listener as a `gateway.parentRefs` entry
+- **THEN** rendering fails with a message naming the Gateway and instructing the operator to separate the listeners by `sectionName`
+
+#### Scenario: Chart-managed Gateway without TLS is rejected
+
+- **WHEN** the chart is rendered with `gateway.createGateway: true`, `gateway.httpsRedirect.enabled: true` and `gateway.tls` unset
+- **THEN** rendering fails with a message stating there is no HTTPS listener to redirect to
+
+#### Scenario: Subscription redirect follows the panel unless it has its own Gateway
+
+- **WHEN** the chart is rendered with `subscription.gateway.hostnames` set and `subscription.gateway.parentRefs` empty, with a resolvable panel redirect target
+- **THEN** the rendered output contains a subscription redirect `HTTPRoute` for the subscription hostnames using the panel's redirect `parentRefs`
+- **AND WHEN** `subscription.gateway.parentRefs` points at a different Gateway and `subscription.gateway.httpsRedirect.parentRefs` is empty
+- **THEN** no subscription redirect `HTTPRoute` is rendered
+
+#### Scenario: Redirect status code is constrained
+
+- **WHEN** the chart is rendered with `gateway.httpsRedirect.statusCode` set to a value other than 301 or 302
+- **THEN** rendering fails schema validation
+
 ### Requirement: Subscription Domain Derivation
 
 The chart SHALL set the panel's `SUB_PUBLIC_DOMAIN` environment variable from an explicit value when provided, otherwise derive it from the active routing front-end's host plus a configurable path suffix.

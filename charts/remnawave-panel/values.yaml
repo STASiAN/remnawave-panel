@@ -153,6 +153,17 @@ subscription:
     # -- Annotations for the subscription HTTPRoute resource
     annotations: {}
 
+    # -- HTTP→HTTPS redirect for the subscription host. `enabled` falls back to
+    # gateway.httpsRedirect.enabled when unset; `statusCode` and `annotations`
+    # fall back the same way. parentRefs default to gateway.httpsRedirect
+    # .parentRefs, but only when this route follows the panel's Gateway
+    # (subscription.gateway.parentRefs empty) — otherwise set them here.
+    httpsRedirect:
+      enabled: null
+      statusCode: null
+      parentRefs: []
+      annotations: {}
+
   # -- Additional pod annotations for the subscription-page Deployment
   podAnnotations: {}
 
@@ -432,6 +443,37 @@ gateway:
   parentRefs: []
   httpRoute:
     # -- Annotations for the panel HTTPRoute resource
+    annotations: {}
+
+  # -- HTTP→HTTPS redirect, on by default. Renders a second HTTPRoute per host
+  # carrying a RequestRedirect filter instead of backendRefs.
+  #
+  # The redirect route MUST attach to the Gateway's HTTP listener and the
+  # serving route to its HTTPS listener — otherwise both match the same
+  # hostname on the same listener and the Gateway resolves the conflict
+  # arbitrarily. Because listener names on an externally-managed Gateway are
+  # unknowable here, the chart only renders the redirect when it can target
+  # the HTTP listener safely:
+  #   - createGateway=true: automatic — the chart owns the listeners, so it
+  #     pins the redirect route to `http` and the serving route to `https`
+  #     (requires gateway.tls; there is nothing to redirect to without it).
+  #   - externally-managed Gateway: set httpsRedirect.parentRefs to that
+  #     Gateway's HTTP listener, and give the HTTPS listener's sectionName in
+  #     gateway.parentRefs. Until you do, no redirect route is rendered.
+  httpsRedirect:
+    # -- Render the HTTP→HTTPS redirect route for the panel host
+    enabled: true
+    # -- Redirect status code (Gateway API allows 301 or 302)
+    statusCode: 301
+    # -- parentRefs for the redirect route — the Gateway's HTTP listener.
+    # Needed for externally-managed Gateways; derived when createGateway=true.
+    parentRefs: []
+    # - group: gateway.networking.k8s.io
+    #   kind: Gateway
+    #   name: envoy
+    #   namespace: envoy-gateway
+    #   sectionName: http
+    # -- Annotations for the redirect HTTPRoute resource
     annotations: {}
 
 # =============================================================================

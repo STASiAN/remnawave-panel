@@ -1,0 +1,38 @@
+{{- if eq (include "remnawave-panel.gateway.httpsRedirect.render" .) "true" -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ printf "%s-https-redirect" (include "remnawave-panel.fullname" .) | trunc 63 | trimSuffix "-" }}
+  labels:
+    {{- include "remnawave-panel.labels" . | nindent 4 }}
+  {{- with .Values.gateway.httpsRedirect.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  parentRefs:
+    {{- if .Values.gateway.httpsRedirect.parentRefs }}
+    {{- range .Values.gateway.httpsRedirect.parentRefs }}
+    - {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- else }}
+    - name: {{ include "remnawave-panel.fullname" . }}
+      sectionName: http
+    {{- end }}
+  {{- if .Values.gateway.hostnames }}
+  hostnames:
+    {{- range .Values.gateway.hostnames }}
+    - {{ . | quote }}
+    {{- end }}
+  {{- end }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: {{ .Values.gateway.httpsRedirect.statusCode }}
+{{- end }}

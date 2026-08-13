@@ -189,6 +189,49 @@ subscription:
 
 `SUB_PUBLIC_DOMAIN` derives from `subscription.gateway.hostnames[0]` plus `subscription.publicPath`, same as the Ingress-based derivation.
 
+### HTTP→HTTPS redirect
+
+`gateway.httpsRedirect.enabled` defaults to `true`. When it applies, the chart renders a second `HTTPRoute` per host that carries a `RequestRedirect` filter (`301` by default, `302` also allowed) instead of `backendRefs`.
+
+The redirect route must attach to the Gateway's **HTTP** listener and the serving route to its **HTTPS** listener. If both land on the same listener they match the same hostname and the Gateway picks a winner arbitrarily, so the chart only renders the redirect when it can target the HTTP listener unambiguously:
+
+- **Chart-managed Gateway** (`createGateway: true` with `gateway.tls`): automatic. The redirect route gets `sectionName: http`, the serving route `sectionName: https`. Without `gateway.tls` there is no HTTPS listener to redirect to and rendering fails.
+- **Externally-managed Gateway**: listener names are unknowable here, so point `gateway.httpsRedirect.parentRefs` at the HTTP listener yourself and give `gateway.parentRefs` the HTTPS listener's `sectionName`. Until you do, no redirect route is rendered — existing installs keep serving both ports unchanged.
+
+```yaml title="values.yaml"
+gateway:
+  enabled: true
+  hostnames:
+    - panel.example.com
+  parentRefs:
+    - name: shared-gateway
+      namespace: infra
+      sectionName: https        # serving route → :443
+  httpsRedirect:
+    enabled: true               # default
+    statusCode: 301             # or 302
+    parentRefs:
+      - name: shared-gateway
+        namespace: infra
+        sectionName: http       # redirect route → :80
+
+subscription:
+  gateway:
+    hostnames:
+      - subs.example.com
+    # enabled / statusCode / annotations fall back to gateway.httpsRedirect.
+    # parentRefs fall back to gateway.httpsRedirect.parentRefs only when the
+    # subscription route follows the panel's Gateway (subscription.gateway
+    # .parentRefs empty) — set them here when it uses a different Gateway.
+    httpsRedirect:
+      parentRefs:
+        - name: public-gateway
+          namespace: infra
+          sectionName: http
+```
+
+Set `gateway.httpsRedirect.enabled: false` to serve plain HTTP alongside HTTPS (or when a gateway-level policy already handles the redirect).
+
 ## Subscription Page {#subscription-page-sidecar}
 
 The chart ships an opt-in `remnawave/subscription-page` Deployment that serves the branded subscription page alongside the panel. This is the K8s counterpart to the compose ["Bundled" install](/install/subscription-page/bundled) — the subscription-page runs as its own Deployment and Service (`<release>-remnawave-panel-subscription`) and talks to the panel through the panel Service. It scales independently via `subscription.replicaCount`.

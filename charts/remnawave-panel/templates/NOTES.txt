@@ -37,6 +37,14 @@ Remnawave Panel has been installed.
   {{- if .Values.gateway.createGateway }}
   A chart-managed Gateway resource was also created.
   {{- end }}
+  {{- if eq (include "remnawave-panel.gateway.httpsRedirect.render" .) "true" }}
+  HTTP→HTTPS redirect route created ({{ .Values.gateway.httpsRedirect.statusCode }}).
+  {{- else if .Values.gateway.httpsRedirect.enabled }}
+  NOTE: no HTTP→HTTPS redirect route was created. The chart cannot guess which
+  listener on an externally-managed Gateway serves port 80 — set
+  gateway.httpsRedirect.parentRefs to that listener (name + sectionName), and
+  give gateway.parentRefs the HTTPS listener's sectionName.
+  {{- end }}
 {{- end }}
 
 {{- if and (not .Values.subscription.enabled) .Values.ingress.enabled (gt (len .Values.ingress.hosts) 0) }}

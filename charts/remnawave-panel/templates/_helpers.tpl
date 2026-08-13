@@ -112,6 +112,76 @@ Subscription-page image reference: digest wins, else tag (default "latest").
 {{- end }}
 
 {{/*
+Subscription HTTP→HTTPS redirect toggle. Falls back to gateway.httpsRedirect
+.enabled when subscription.gateway.httpsRedirect.enabled is unset (null).
+Renders "true" or "false" — compare with eq.
+*/}}
+{{- define "remnawave-panel.subscription.httpsRedirect.enabled" -}}
+{{- $sub := .Values.subscription.gateway.httpsRedirect -}}
+{{- if kindIs "invalid" $sub.enabled -}}
+{{- .Values.gateway.httpsRedirect.enabled | toString -}}
+{{- else -}}
+{{- $sub.enabled | toString -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Subscription redirect status code, falling back to gateway.httpsRedirect.statusCode.
+*/}}
+{{- define "remnawave-panel.subscription.httpsRedirect.statusCode" -}}
+{{- $sub := .Values.subscription.gateway.httpsRedirect -}}
+{{- if kindIs "invalid" $sub.statusCode -}}
+{{- .Values.gateway.httpsRedirect.statusCode -}}
+{{- else -}}
+{{- $sub.statusCode -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Whether the chart can pin routes to named listeners on a chart-managed Gateway
+(createGateway with an HTTPS listener, i.e. gateway.tls set).
+*/}}
+{{- define "remnawave-panel.gateway.managedListeners" -}}
+{{- if and .Values.gateway.createGateway (not .Values.gateway.gatewayName) .Values.gateway.tls -}}
+true
+{{- else -}}
+false
+{{- end -}}
+{{- end }}
+
+{{/*
+Whether the panel HTTP→HTTPS redirect route renders. Requires gateway mode, the
+toggle, and a way to target the Gateway's HTTP listener: explicit
+gateway.httpsRedirect.parentRefs, or the chart-managed Gateway's `http` listener.
+*/}}
+{{- define "remnawave-panel.gateway.httpsRedirect.render" -}}
+{{- $targetable := or (gt (len .Values.gateway.httpsRedirect.parentRefs) 0) (eq (include "remnawave-panel.gateway.managedListeners" .) "true") -}}
+{{- if and .Values.gateway.enabled .Values.gateway.httpsRedirect.enabled $targetable -}}
+true
+{{- else -}}
+false
+{{- end -}}
+{{- end }}
+
+{{/*
+Whether the subscription HTTP→HTTPS redirect route renders. Its parentRefs only
+fall back to the panel's redirect refs when the subscription route follows the
+panel's Gateway (subscription.gateway.parentRefs empty) — a fallback across
+Gateways would attach the redirect to the wrong one.
+*/}}
+{{- define "remnawave-panel.subscription.httpsRedirect.render" -}}
+{{- $follows := eq (len .Values.subscription.gateway.parentRefs) 0 -}}
+{{- $inherited := or (gt (len .Values.gateway.httpsRedirect.parentRefs) 0) (eq (include "remnawave-panel.gateway.managedListeners" .) "true") -}}
+{{- $targetable := or (gt (len .Values.subscription.gateway.httpsRedirect.parentRefs) 0) (and $follows $inherited) -}}
+{{- $on := eq (include "remnawave-panel.subscription.httpsRedirect.enabled" .) "true" -}}
+{{- if and .Values.gateway.enabled .Values.subscription.enabled (gt (len .Values.subscription.gateway.hostnames) 0) $on $targetable -}}
+true
+{{- else -}}
+false
+{{- end -}}
+{{- end }}
+
+{{/*
 Secret name: chart-managed or existing.
 */}}
 {{- define "remnawave-panel.secretName" -}}

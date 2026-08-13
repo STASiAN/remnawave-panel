@@ -4,3 +4,37 @@
 {{- if and .Values.subscription.enabled (not .Values.ingress.enabled) (not .Values.gateway.enabled) }}
 {{- fail "subscription.enabled=true requires a routing front-end. Enable either ingress.enabled (with subscription.ingress.hosts[]) or gateway.enabled (with subscription.gateway.hostnames[])." }}
 {{- end }}
+{{- if and .Values.gateway.enabled .Values.gateway.httpsRedirect.enabled }}
+{{- if not (has (int .Values.gateway.httpsRedirect.statusCode) (list 301 302)) }}
+{{- fail "gateway.httpsRedirect.statusCode must be 301 or 302 (Gateway API RequestRedirect allows no other value)." }}
+{{- end }}
+{{- /*
+A redirect parentRef that resolves to the same listener(s) as the serving
+route's parentRef would make both routes match the same hostname on the same
+listener, and the Gateway would pick a winner arbitrarily. Compare name,
+namespace and sectionName; an empty sectionName means "every listener", so it
+collides with any sectionName on the same Gateway.
+*/}}
+{{- $panelServing := .Values.gateway.parentRefs }}
+{{- range $redirect := .Values.gateway.httpsRedirect.parentRefs }}
+{{- range $serving := $panelServing }}
+{{- if and (eq $redirect.name $serving.name) (eq (default "" $redirect.namespace) (default "" $serving.namespace)) (or (not $redirect.sectionName) (not $serving.sectionName) (eq $redirect.sectionName $serving.sectionName)) }}
+{{- fail (printf "gateway.httpsRedirect.parentRefs entry for Gateway %q overlaps the serving route's listeners. Give the redirect route the HTTP listener's sectionName and the serving route (gateway.parentRefs) the HTTPS listener's sectionName." $redirect.name) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- $subServing := .Values.subscription.gateway.parentRefs | default .Values.gateway.parentRefs }}
+{{- $subRedirect := .Values.subscription.gateway.httpsRedirect.parentRefs | default .Values.gateway.httpsRedirect.parentRefs }}
+{{- if eq (include "remnawave-panel.subscription.httpsRedirect.enabled" .) "true" }}
+{{- range $redirect := $subRedirect }}
+{{- range $serving := $subServing }}
+{{- if and (eq $redirect.name $serving.name) (eq (default "" $redirect.namespace) (default "" $serving.namespace)) (or (not $redirect.sectionName) (not $serving.sectionName) (eq $redirect.sectionName $serving.sectionName)) }}
+{{- fail (printf "subscription redirect parentRefs for Gateway %q overlap the subscription serving route's listeners. Give the redirect route the HTTP listener's sectionName and the serving route the HTTPS listener's sectionName." $redirect.name) }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if and .Values.gateway.enabled .Values.gateway.createGateway (not .Values.gateway.gatewayName) .Values.gateway.httpsRedirect.enabled (not .Values.gateway.tls) }}
+{{- fail "gateway.createGateway=true with gateway.httpsRedirect.enabled=true requires gateway.tls — the chart-managed Gateway has no HTTPS listener to redirect to. Set gateway.tls or gateway.httpsRedirect.enabled=false." }}
+{{- end }}
